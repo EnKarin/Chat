@@ -10,8 +10,8 @@ public interface DatabaseService {
 
     List<User> getAll();
 
-    User get(int userId);
+    User get(int userId); // Если пользователя с таким id не существует, верни null
 
-    User update(int userId, User user);
+    User update(int userId, User user); // Тут также, как get
 
 }
