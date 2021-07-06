@@ -1,4 +1,4 @@
-package ru.shift.chat.service;
+package ru.shift.chat.Repository;
 
 import org.springframework.data.repository.CrudRepository;
 import ru.shift.chat.model.User;
