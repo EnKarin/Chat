@@ -1,5 +1,9 @@
 package ru.shift.chat.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -7,16 +11,20 @@ import java.util.List;
 @Table(name = "chat")
 public class Chat {
     @Id
-    @GeneratedValue
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int chatId;
 
     @Column
     private String name;
 
     @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JsonIgnore
     private List<Connection> connections;
 
     @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JsonIgnore
     private List<Message> messages;
 
     public List<Message> getMessages() {
@@ -24,7 +32,7 @@ public class Chat {
     }
 
     public int getId() {
-        return id;
+        return chatId;
     }
 
     public String getName() {

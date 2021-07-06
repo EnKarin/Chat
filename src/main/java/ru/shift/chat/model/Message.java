@@ -1,5 +1,7 @@
 package ru.shift.chat.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 
 @Entity
@@ -20,10 +22,15 @@ public class Message {
 
     @ManyToOne()
     @JoinColumn(name = "chatId")
+    @JsonIgnore
     private Chat chat;
 
     public void setChat(Chat chat) {
         this.chat = chat;
+    }
+
+    public Chat getChat() {
+        return chat;
     }
 
     public int getMessageId() {

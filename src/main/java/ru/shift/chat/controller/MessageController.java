@@ -23,10 +23,8 @@ public class MessageController {
 
     @PostMapping("/message")
     private Message saveMessage(@RequestBody Message message,
-                                @RequestParam(required = false, defaultValue = "0") int chatId){
-        if(chatId == 0)
-            return databaseService.addMessage(message, LocalDateTime.now().toString());
-        else return databaseService.addMessage(message, LocalDateTime.now().toString(), chatId);
+                                @RequestParam(required = false, defaultValue = "0") int chatId) throws ChatNotFoundException{
+        return databaseService.addMessage(message, LocalDateTime.now().toString(), chatId);
     }
 
     @GetMapping("/messages")

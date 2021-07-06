@@ -1,5 +1,6 @@
 package ru.shift.chat.service;
 
+import ru.shift.chat.exception.ChatNotFoundException;
 import ru.shift.chat.model.Chat;
 import ru.shift.chat.model.Message;
 import ru.shift.chat.model.User;
@@ -16,8 +17,6 @@ public interface DatabaseService {
 
     User updateUser(int userId, User user);
 
-    Message addMessage(Message message, String time);
-
     Chat addChat(Chat chat);
 
     List<Chat> getAllChat();
@@ -26,7 +25,7 @@ public interface DatabaseService {
 
     void leaveChat(int userId, int chatId);
 
-    Message addMessage(Message message, String time, int chatId);
+    Message addMessage(Message message, String time, int chatId) throws ChatNotFoundException;
 
     List<Message> getAllMessageInCurrentChat(int idChat);
 }
