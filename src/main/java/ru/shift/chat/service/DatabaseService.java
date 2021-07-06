@@ -1,7 +1,6 @@
 package ru.shift.chat.service;
 
 import ru.shift.chat.model.Chat;
-import ru.shift.chat.model.Connection;
 import ru.shift.chat.model.Message;
 import ru.shift.chat.model.User;
 
@@ -19,17 +18,15 @@ public interface DatabaseService {
 
     Message addMessage(Message message, String time);
 
-    List<Message> getAllMessage();
-
     Chat addChat(Chat chat);
 
     List<Chat> getAllChat();
 
-    void enterChat(Connection connection);
+    void enterChat(int userId, int chatId);
 
-    void leaveChat(Connection connection);
+    void leaveChat(int userId, int chatId);
 
-    void addMessage(Message message, String time, int chatId);
+    Message addMessage(Message message, String time, int chatId);
 
     List<Message> getAllMessageInCurrentChat(int idChat);
 }

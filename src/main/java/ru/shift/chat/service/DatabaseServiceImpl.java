@@ -3,7 +3,6 @@ package ru.shift.chat.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.shift.chat.model.Chat;
-import ru.shift.chat.model.Connection;
 import ru.shift.chat.model.Message;
 import ru.shift.chat.model.User;
 import ru.shift.chat.repository.ChatRepository;
@@ -22,9 +21,6 @@ public class DatabaseServiceImpl implements DatabaseService{
 
     @Autowired
     MessageRepository messageRepository;
-
-    @Autowired
-    ConnectionRepository connectionRepository;
 
     @Autowired
     ChatRepository chatRepository;
@@ -57,13 +53,6 @@ public class DatabaseServiceImpl implements DatabaseService{
     }
 
     @Override
-    public List<Message> getAllMessage() {
-        List<Message> list = (List<Message>) messageRepository.findAll();
-        list.sort(Comparator.comparing(Message::getSendTime).reversed());
-        return list;
-    }
-
-    @Override
     public Chat addChat(Chat chat) {
         return chatRepository.save(chat);
     }
@@ -74,19 +63,19 @@ public class DatabaseServiceImpl implements DatabaseService{
     }
 
     @Override
-    public void enterChat(Connection connection) {
-        connectionRepository.save(connection);
+    public void enterChat(int userId, int chatId) {
+
     }
 
     @Override
-    public void leaveChat(Connection connection) {
-        connectionRepository.delete(connection);
+    public void leaveChat(int userId, int chatId) {
+
     }
 
     @Override
-    public void addMessage(Message message, String time, int chatId) {
+    public Message addMessage(Message message, String time, int chatId) {
         message.setChat(chatRepository.findById(chatId).get());
-        addMessage(message, time);
+        return addMessage(message, time);
     }
 
     @Override
