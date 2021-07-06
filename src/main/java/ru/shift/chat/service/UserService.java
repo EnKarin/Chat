@@ -2,7 +2,8 @@ package ru.shift.chat.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.shift.chat.Repository.UserRepository;
+import ru.shift.chat.model.Message;
+import ru.shift.chat.repository.UserRepository;
 import ru.shift.chat.model.User;
 
 import java.util.List;
@@ -31,6 +32,16 @@ public class UserService implements DatabaseService{
     public User update(int userId, User user) {
         user.setUserId(userId);
         return (userRepository.findById(userId).isPresent()? userRepository.save(user): null);
+    }
+
+    @Override
+    public Message add(Message message, String time) {
+        return null;
+    }
+
+    @Override
+    public List<Message> getAllMessage() {
+        return null;
     }
 
     public User add(final User user) {

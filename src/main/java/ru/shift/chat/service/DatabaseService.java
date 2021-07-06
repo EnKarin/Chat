@@ -1,5 +1,6 @@
 package ru.shift.chat.service;
 
+import ru.shift.chat.model.Message;
 import ru.shift.chat.model.User;
 
 import java.util.List;
@@ -10,8 +11,11 @@ public interface DatabaseService {
 
     List<User> getAll();
 
-    User get(int userId); // Если пользователя с таким id не существует, верни null
+    User get(int userId);
 
-    User update(int userId, User user); // Тут также, как get
+    User update(int userId, User user);
 
+    Message add(Message message, String time);
+
+    List<Message> getAllMessage();
 }
