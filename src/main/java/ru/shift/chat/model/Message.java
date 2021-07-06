@@ -1,21 +1,22 @@
 package ru.shift.chat.model;
 
+import javax.persistence.*;
+
+@Entity
 public class Message {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int messageId;
 
+    @Column
     private int userId;
 
+    @Column
     private String text;
 
+    @Column
     private String sendTime;
-
-    public Message(){}
-
-    public Message(int u, String t){
-        userId = u;
-        text = t;
-    }
 
     public int getMessageId() {
         return messageId;
@@ -42,7 +43,7 @@ public class Message {
     }
 
     public String getSendTime() {
-        return sendTime;
+        return sendTime.replace('T', ' ');
     }
 
     public void setSendTime(String sendTime) {

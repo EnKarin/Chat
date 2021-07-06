@@ -3,7 +3,6 @@ package ru.shift.chat.model;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "books")
 public class User {
 
     @Id
@@ -15,13 +14,6 @@ public class User {
 
     @Column
     private String lastName;
-
-    public User() {}
-
-    public User(String f, String l){
-        firstName = f;
-        lastName = l;
-    }
 
     public int getUserId() {
         return userId;
@@ -37,10 +29,6 @@ public class User {
 
     public void setUserId(int userId) {
         this.userId = userId;
-    }
-
-    public int getId() {
-        return userId;
     }
 
     public String getFirstName() {
