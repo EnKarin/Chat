@@ -6,6 +6,7 @@ import ru.shift.chat.model.Chat;
 import ru.shift.chat.service.DatabaseService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class ChatController {
@@ -14,9 +15,7 @@ public class ChatController {
     DatabaseService databaseService;
 
     @PostMapping("/chat")
-    private Chat createChat(@RequestParam String name){
-        Chat chat = new Chat();
-        chat.setName(name);
+    private Chat createChat(@RequestBody Chat chat){
         return databaseService.addChat(chat);
     }
 
@@ -26,14 +25,12 @@ public class ChatController {
     }
 
     @PostMapping("/chat/enter")
-    private void enterTheChat(@RequestParam int userId,
-                             @RequestParam int chatId){
-        databaseService.enterChat(userId, chatId);
+    private void enterTheChat(@RequestBody Map<String, Integer> map){
+        databaseService.enterChat(map.get("userId"), map.get("chatId"));
     }
 
     @PostMapping("/chat/leave")
-    private void quitChat(@RequestParam int userId,
-                          @RequestParam int chatId){
-        databaseService.leaveChat(userId, chatId);
+    private void quitChat(@RequestBody Map<String, Integer> map){
+        databaseService.leaveChat(map.get("userId"), map.get("chatId"));
     }
 }

@@ -31,7 +31,7 @@ public class Chat {
         return messages;
     }
 
-    public int getId() {
+    public int getChatId() {
         return chatId;
     }
 

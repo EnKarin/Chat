@@ -9,6 +9,7 @@ import ru.shift.chat.service.DatabaseService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -22,13 +23,19 @@ public class MessageController {
     private void notFound(){}
 
     @PostMapping("/message")
-    private Message saveMessage(@RequestBody Message message,
-                                @RequestParam(required = false, defaultValue = "0") int chatId) throws ChatNotFoundException{
-        return databaseService.addMessage(message, LocalDateTime.now().toString(), chatId);
+    private Message saveMessage(@RequestBody Map<String, String> map) throws ChatNotFoundException{
+        map.putIfAbsent("chatId", "0");
+        Message message = new Message();
+        message.setUserId(Integer.parseInt(map.get("userId")));
+        message.setText(map.get("text"));
+        message.setSendTime(LocalDateTime.now().toString());
+        return databaseService.addMessage(message, Integer.parseInt(map.get("chatId")));
     }
 
     @GetMapping("/messages")
-    private List<Message> getMessages(@RequestParam(required = false, defaultValue = "0") int chatId){
+    private List<Message> getMessages(@RequestParam(required = false) Integer chatId){
+        if(chatId == null)
+            chatId = 0;
         return databaseService.getAllMessageInCurrentChat(chatId);
     }
 }

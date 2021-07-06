@@ -79,8 +79,7 @@ public class DatabaseServiceImpl implements DatabaseService{
     }
 
     @Override
-    public Message addMessage(Message message, String time, int chatId) throws ChatNotFoundException {
-        message.setSendTime(time);
+    public Message addMessage(Message message, int chatId) throws ChatNotFoundException {
         message.setChat(chatRepository.findById(chatId).get());
         if(chatId == 0 || message.getChat().getConnections().stream()
                 .map(Connection::getUser)

@@ -25,7 +25,7 @@ public interface DatabaseService {
 
     void leaveChat(int userId, int chatId);
 
-    Message addMessage(Message message, String time, int chatId) throws ChatNotFoundException;
+    Message addMessage(Message message, int chatId) throws ChatNotFoundException;
 
     List<Message> getAllMessageInCurrentChat(int idChat);
 }
