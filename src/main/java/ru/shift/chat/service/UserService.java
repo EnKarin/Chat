@@ -42,6 +42,6 @@ public class UserService implements DatabaseService{
     }
 
     public List<User> findByLastName(final String lastName) {
-        return userRepository.findByFirstName(lastName);
+        return userRepository.findByLastName(lastName);
     }
 }
