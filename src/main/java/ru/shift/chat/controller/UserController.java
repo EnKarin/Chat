@@ -1,6 +1,5 @@
 package ru.shift.chat.controller;
 
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +14,6 @@ import ru.shift.chat.service.DatabaseService;
 import ru.shift.chat.service.ValidatorImpl;
 
 import javax.validation.Valid;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @Validated
@@ -40,7 +37,7 @@ public class UserController {
                 return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCOMPLETE_INPUT),
                         HttpStatus.BAD_REQUEST);
             }
-            return new ResponseEntity<>(databaseService.add(user),HttpStatus.OK);
+            return new ResponseEntity<>(databaseService.addUser(user),HttpStatus.OK);
         } catch (Exception ignored){
             return new ResponseEntity<>(new ErrorDTO(ErrorCode.UNKNOWN_ERROR),
                     HttpStatus.INTERNAL_SERVER_ERROR);
@@ -60,7 +57,7 @@ public class UserController {
     @GetMapping("/user/{userId}")
     private ResponseEntity<?> getUser(@PathVariable int userId){
         try{
-            User user = databaseService.get(userId);
+            User user = databaseService.getUser(userId);
             if(user == null) {
                 return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCORRECT_ID),
                         HttpStatus.BAD_REQUEST);
@@ -81,7 +78,7 @@ public class UserController {
                     HttpStatus.BAD_REQUEST);
         }
         try {
-            User updateUser = databaseService.update(userId, user);
+            User updateUser = databaseService.updateUser(userId, user);
             if(updateUser == null) {
                 return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCORRECT_ID),
                         HttpStatus.BAD_REQUEST);

@@ -18,6 +18,14 @@ public class Message {
     @Column
     private String sendTime;
 
+    @ManyToOne()
+    @JoinColumn(name = "chatId")
+    private Chat chat;
+
+    public void setChat(Chat chat) {
+        this.chat = chat;
+    }
+
     public int getMessageId() {
         return messageId;
     }

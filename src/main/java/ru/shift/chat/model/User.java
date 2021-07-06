@@ -1,8 +1,10 @@
 package ru.shift.chat.model;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
+@Table(name = "user")
 public class User {
 
     @Id
@@ -14,6 +16,9 @@ public class User {
 
     @Column
     private String lastName;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private List<Connection> connections;
 
     public int getUserId() {
         return userId;
@@ -37,5 +42,9 @@ public class User {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public List<Connection> getConnections() {
+        return connections;
     }
 }

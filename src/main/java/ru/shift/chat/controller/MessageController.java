@@ -16,7 +16,7 @@ public class MessageController {
 
     @PostMapping("/message")
     private Message saveMessage(@RequestBody Message message){
-        return databaseService.add(message, LocalDateTime.now().toString());
+        return databaseService.addMessage(message, LocalDateTime.now().toString());
     }
 
     @GetMapping("/messages")
