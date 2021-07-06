@@ -6,11 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import ru.shift.chat.enums.ErrorCode;
 import ru.shift.chat.model.ErrorDTO;
 import ru.shift.chat.model.User;
 import ru.shift.chat.service.DatabaseService;
+import ru.shift.chat.service.ValidatorImpl;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -25,6 +27,14 @@ public class UserController {
 
     @Autowired
     Gson gson;
+
+    @Autowired
+    ValidatorImpl validator;
+
+    @InitBinder
+    private void initBinder(WebDataBinder binder) {
+        binder.setValidator(validator);
+    }
 
     @PostMapping("/user")
     private ResponseEntity<String> saveUser(@RequestBody @Valid User user, BindingResult result){
