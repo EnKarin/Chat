@@ -14,7 +14,6 @@ import ru.shift.chat.repository.UserRepository;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class DatabaseServiceImpl implements DatabaseService{
@@ -72,10 +71,7 @@ public class DatabaseServiceImpl implements DatabaseService{
 
     @Override
     public void leaveChat(int userId, int chatId) {
-        Connection connection = new Connection();
-        connection.setChat(chatRepository.findById(chatId).get());
-        connection.setUser(userRepository.findById(userId).get());
-        connectionRepository.delete(connection);
+        connectionRepository.deleteById(connectionRepository.findByUserIdAndChatId(userId, chatId).get(0));
     }
 
     @Override
