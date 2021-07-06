@@ -28,7 +28,8 @@ public class UserService implements DatabaseService{
 
     @Override
     public User update(int userId, User user) {
-        return null;
+        user.setUserId(userId);
+        return (userRepository.findById(userId).isPresent()? userRepository.save(user): null);
     }
 
     public User add(final User user) {

@@ -27,7 +27,7 @@ public class UserController {
     Gson gson;
 
     @PostMapping("/user")
-    private ResponseEntity<String> saveUser(@Valid User user, BindingResult result){
+    private ResponseEntity<String> saveUser(@RequestBody @Valid User user, BindingResult result){
         try {
             if(result.hasErrors()){
                 return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.INCOMPLETE_INPUT)),
@@ -69,7 +69,8 @@ public class UserController {
 
     @PutMapping("/user/{userId}")
     private ResponseEntity<String> updateUser(@PathVariable int userId,
-                                          @Valid User user, BindingResult result){
+                                              @RequestBody @Valid User user,
+                                              BindingResult result){
         if(result.hasErrors()){
             return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.INCOMPLETE_INPUT)),
                     HttpStatus.BAD_REQUEST);
