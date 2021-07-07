@@ -14,6 +14,7 @@ import ru.shift.chat.service.DatabaseService;
 import ru.shift.chat.service.ValidatorImpl;
 
 import javax.validation.Valid;
+import java.util.NoSuchElementException;
 
 @RestController
 @Validated
@@ -57,12 +58,10 @@ public class UserController {
     @GetMapping("/user/{userId}")
     private ResponseEntity<?> getUser(@PathVariable int userId){
         try{
-            User user = databaseService.getUser(userId);
-            if(user == null) {
-                return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCORRECT_ID),
-                        HttpStatus.BAD_REQUEST);
-            }
-            return new ResponseEntity<>(user, HttpStatus.OK);
+            return new ResponseEntity<>(databaseService.getUser(userId), HttpStatus.OK);
+        } catch (NoSuchElementException e){
+            return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCORRECT_ID),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception ignored){
             return new ResponseEntity<>(new ErrorDTO(ErrorCode.UNKNOWN_ERROR),
                     HttpStatus.INTERNAL_SERVER_ERROR);
@@ -78,12 +77,10 @@ public class UserController {
                     HttpStatus.BAD_REQUEST);
         }
         try {
-            User updateUser = databaseService.updateUser(userId, user);
-            if(updateUser == null) {
-                return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCORRECT_ID),
-                        HttpStatus.BAD_REQUEST);
-            }
-            return new ResponseEntity<>(user, HttpStatus.OK);
+            return new ResponseEntity<>(databaseService.updateUser(userId, user), HttpStatus.OK);
+        } catch (NoSuchElementException e){
+            return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCORRECT_ID),
+                    HttpStatus.BAD_REQUEST);
         } catch (Exception ignored){
             return new ResponseEntity<>(new ErrorDTO(ErrorCode.UNKNOWN_ERROR),
                     HttpStatus.INTERNAL_SERVER_ERROR);

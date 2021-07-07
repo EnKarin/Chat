@@ -14,6 +14,7 @@ import ru.shift.chat.repository.UserRepository;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class DatabaseServiceImpl implements DatabaseService{
@@ -42,13 +43,16 @@ public class DatabaseServiceImpl implements DatabaseService{
 
     @Override
     public User getUser(int userId) {
-        return userRepository.findById(userId).orElse(null);
+        return userRepository.findById(userId).get();
     }
 
     @Override
     public User updateUser(int userId, User user) {
         user.setUserId(userId);
-        return (userRepository.findById(userId).isPresent()? userRepository.save(user): null);
+        if(userRepository.findById(userId).isPresent()){
+            return userRepository.save(user);
+        }
+        throw new NoSuchElementException();
     }
 
     @Override
