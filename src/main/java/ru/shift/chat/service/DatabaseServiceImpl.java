@@ -66,7 +66,9 @@ public class DatabaseServiceImpl implements DatabaseService{
         Connection connection = new Connection();
         connection.setChat(chatRepository.findById(chatId).get());
         connection.setUser(userRepository.findById(userId).get());
-        connectionRepository.save(connection);
+        if(connectionRepository.findByUserIdAndChatId(userId, chatId).isEmpty()) {
+            connectionRepository.save(connection);
+        }
     }
 
     @Override
