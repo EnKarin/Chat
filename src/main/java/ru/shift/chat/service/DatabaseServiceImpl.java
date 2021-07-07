@@ -73,7 +73,7 @@ public class DatabaseServiceImpl implements DatabaseService{
 
     @Override
     public void leaveChat(int userId, int chatId) {
-        connectionRepository.deleteById(connectionRepository.findByUserIdAndChatId(userId, chatId).get(0));
+        connectionRepository.deleteAllById(connectionRepository.findByUserIdAndChatId(userId, chatId));
     }
 
     @Override
