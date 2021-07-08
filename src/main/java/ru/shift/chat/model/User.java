@@ -1,6 +1,7 @@
 package ru.shift.chat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 import java.util.List;
@@ -9,13 +10,28 @@ import java.util.List;
 @Table(name = "user")
 public class User {
 
+    @ApiModelProperty(
+            value = "User ID in the database. Not specified at creation",
+            name = "userId",
+            dataType = "int",
+            example = "1")
     @Id
     @GeneratedValue( strategy = GenerationType.AUTO)
     private int userId;
 
+    @ApiModelProperty(
+            value = "First name of the user",
+            name = "firstName",
+            dataType = "String",
+            example = "Alex")
     @Column
     private String firstName;
 
+    @ApiModelProperty(
+            value = "Last name of the user",
+            name = "lastName",
+            dataType = "String",
+            example = "Meheev")
     @Column
     private String lastName;
 
