@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
-public class DatabaseServiceImpl implements DatabaseService{
+public class DatabaseServiceImpl implements DatabaseService {
 
     @Autowired
     UserRepository userRepository;
@@ -49,7 +49,7 @@ public class DatabaseServiceImpl implements DatabaseService{
     @Override
     public User updateUser(int userId, User user) {
         user.setUserId(userId);
-        if(userRepository.findById(userId).isPresent()){
+        if (userRepository.findById(userId).isPresent()) {
             return userRepository.save(user);
         }
         throw new NoSuchElementException();
@@ -67,10 +67,10 @@ public class DatabaseServiceImpl implements DatabaseService{
 
     @Override
     public void enterChat(int userId, int chatId) {
-        Connection connection = new Connection();
-        connection.setChat(chatRepository.findById(chatId).get());
-        connection.setUser(userRepository.findById(userId).get());
-        if(connectionRepository.findByUserIdAndChatId(userId, chatId).isEmpty()) {
+        if (connectionRepository.findByUserIdAndChatId(userId, chatId).isEmpty()) {
+            Connection connection = new Connection();
+            connection.setChat(chatRepository.findById(chatId).get());
+            connection.setUser(userRepository.findById(userId).get());
             connectionRepository.save(connection);
         }
     }
@@ -83,10 +83,10 @@ public class DatabaseServiceImpl implements DatabaseService{
     @Override
     public Message addMessage(Message message, int chatId) throws ChatNotFoundException {
         message.setChat(chatRepository.findById(chatId).get());
-        if(!message.getChat().getConnections().isEmpty() && (chatId == 0 || message.getChat().getConnections().stream()
+        if (!message.getChat().getConnections().isEmpty() && (chatId == 0 || message.getChat().getConnections().stream()
                 .map(Connection::getUser)
                 .mapToInt(User::getUserId)
-                .anyMatch(id -> message.getUserId() == id))){
+                .anyMatch(id -> message.getUserId() == id))) {
             return messageRepository.save(message);
         }
         throw new ChatNotFoundException();
