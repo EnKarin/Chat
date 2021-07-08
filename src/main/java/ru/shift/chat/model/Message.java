@@ -1,19 +1,35 @@
 package ru.shift.chat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 
 @Entity
 public class Message {
 
+    @ApiModelProperty(
+            value = "Message ID in the database. Not specified at creation",
+            name = "messageId",
+            dataType = "int",
+            example = "1")
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int messageId;
 
+    @ApiModelProperty(
+            value = "User ID in the database",
+            name = "userId",
+            dataType = "int",
+            example = "6")
     @Column
     private int userId;
 
+    @ApiModelProperty(
+            value = "Message text",
+            name = "text",
+            dataType = "String",
+            example = "Hello!")
     @Column
     private String text;
 

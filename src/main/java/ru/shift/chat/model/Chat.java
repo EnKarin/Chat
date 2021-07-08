@@ -1,6 +1,7 @@
 package ru.shift.chat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -10,10 +11,21 @@ import java.util.List;
 @Entity
 @Table(name = "chat")
 public class Chat {
+
+    @ApiModelProperty(
+            value = "Chat ID in the database. Not specified at creation",
+            name = "chatId",
+            dataType = "int",
+            example = "1")
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int chatId;
 
+    @ApiModelProperty(
+            value = "Chat name",
+            name = "name",
+            dataType = "String",
+            example = "Private chat")
     @Column
     private String name;
 
