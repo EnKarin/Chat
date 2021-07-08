@@ -11,7 +11,7 @@ public interface DatabaseService {
 
     User addUser(User user);
 
-    List<User> getAll();
+    List<User> getAllUsers();
 
     User getUser(int userId);
 

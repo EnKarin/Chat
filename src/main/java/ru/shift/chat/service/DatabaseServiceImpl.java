@@ -37,7 +37,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public List<User> getAll() {
+    public List<User> getAllUsers() {
         return (List<User>) userRepository.findAll();
     }
 
@@ -94,7 +94,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public List<Message> getAllMessageInCurrentChat(int idChat) {
-        List<Message> list = chatRepository.findById(idChat).orElse(new Chat()).getMessages();
+        List<Message> list = chatRepository.findById(idChat).get().getMessages();
         list.sort(Comparator.comparing(Message::getSendTime).reversed());
         return list;
     }

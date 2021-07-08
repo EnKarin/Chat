@@ -37,10 +37,6 @@ public class Message {
         return messageId;
     }
 
-    public void setMessageId(int messageId) {
-        this.messageId = messageId;
-    }
-
     public int getUserId() {
         return userId;
     }

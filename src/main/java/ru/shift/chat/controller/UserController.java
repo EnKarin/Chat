@@ -48,7 +48,7 @@ public class UserController {
     @GetMapping("/users")
     private ResponseEntity<?> getAllUser(){
         try {
-            return new ResponseEntity<>(databaseService.getAll(), HttpStatus.OK);
+            return new ResponseEntity<>(databaseService.getAllUsers(), HttpStatus.OK);
         } catch (Exception ignored){
             return new ResponseEntity<>(new ErrorDTO(ErrorCode.UNKNOWN_ERROR),
                     HttpStatus.INTERNAL_SERVER_ERROR);
