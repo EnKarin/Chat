@@ -74,4 +74,8 @@ public class User {
     public List<Connection> getConnections() {
         return connections;
     }
+
+    public List<Unchecked> getUnchecked() {
+        return unchecked;
+    }
 }

@@ -128,7 +128,7 @@ public class MessageControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("text", is("Text")));
 
         Thread.sleep(2000);
-        Assert.assertTrue(databaseService.getAllMessageInCurrentChat(chat.getChatId(), user.getUserId()).stream()
+        Assert.assertTrue(databaseService.getAllMessage(chat.getChatId(), user.getUserId()).stream()
                 .noneMatch(message -> message.getText().equals("Text")));
     }
 

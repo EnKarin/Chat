@@ -99,8 +99,8 @@ public class UserController {
             @ApiResponse(code = 500, message = "Connection error")})
     @PutMapping("/user/{userId}")
     private User updateUser(@PathVariable int userId,
-                                         @RequestBody @Valid User user,
-                                         BindingResult result) {
+                            @RequestBody @Valid User user,
+                            BindingResult result) {
         if (result.hasErrors()) {
             throw new IllegalArgumentException();
         }

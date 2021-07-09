@@ -100,6 +100,6 @@ public class ChatApplicationTests {
 	@Test
 	public void getAllMessageInCurrentChatDoNotExistChat(){
 		Mockito.when(chatRepository.findById(2)).thenReturn(Optional.empty());
-		Assert.assertThrows(NoSuchElementException.class, () -> databaseService.getAllMessageInCurrentChat(2, 0));
+		Assert.assertThrows(NoSuchElementException.class, () -> databaseService.getAllMessage(2, 0));
 	}
 }

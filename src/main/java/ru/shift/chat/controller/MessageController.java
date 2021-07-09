@@ -32,7 +32,7 @@ public class MessageController {
             response = Message.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success|OK"),
-            @ApiResponse(code = 404, message = "Chat not found")})
+            @ApiResponse(code = 404, message = "Chat or user not found")})
     @PostMapping("/message")
     private Message saveMessage(@RequestBody Map<String, String> map) throws ChatNotFoundException{
         LocalDateTime localDateTime = LocalDateTime.now();
@@ -50,9 +50,24 @@ public class MessageController {
     }
 
     @ApiOperation(value = "Retrieve all messages from a private chat. If the chat is not specified, then from the general",
-            response = List.class)
+            response = List.class, tags = "getMessages")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 404, message = "Chat or user not found")})
     @GetMapping("/messages")
-    private List<Message> getMessages(@RequestParam(required = false) Integer chatId){
-        return databaseService.getAllMessageInCurrentChat(chatId == null? 0: chatId, 0); // don't working version
+    private List<Message> getMessages(@RequestParam Integer userId,
+                                      @RequestParam(required = false) Integer chatId){
+        return databaseService.getAllMessage(chatId == null? 0: chatId, userId);
+    }
+
+    @ApiOperation(value = "Returns unread messages for the given user in the specified chat",
+            response = List.class, tags = "getMessages")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 404, message = "Chat or user not found")})
+    @GetMapping("/messages/unread")
+    private List<Message> getUnreadMessages(@PathVariable int userId,
+                                           @PathVariable(required = false, value = "0") int chatId){
+        return databaseService.getAllUnreadMessages(userId, chatId);
     }
 }

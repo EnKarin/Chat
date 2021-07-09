@@ -3,20 +3,16 @@ package ru.shift.chat.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.shift.chat.exception.ChatNotFoundException;
-import ru.shift.chat.model.Chat;
-import ru.shift.chat.model.Connection;
-import ru.shift.chat.model.Message;
-import ru.shift.chat.model.User;
-import ru.shift.chat.repository.ChatRepository;
-import ru.shift.chat.repository.ConnectionRepository;
-import ru.shift.chat.repository.MessageRepository;
-import ru.shift.chat.repository.UserRepository;
+import ru.shift.chat.model.*;
+import ru.shift.chat.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
@@ -32,6 +28,9 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Autowired
     ConnectionRepository connectionRepository;
+
+    @Autowired
+    UncheckedRepository uncheckedRepository;
 
     @Override
     public User addUser(final User user) {
@@ -74,6 +73,21 @@ public class DatabaseServiceImpl implements DatabaseService {
             connection.setChat(chatRepository.findById(chatId).get());
             connection.setUser(userRepository.findById(userId).get());
             connectionRepository.save(connection);
+
+            List<Message> messages = connection.getChat().getMessages();
+            List<Unchecked> uncheckeds = Stream.generate(Unchecked::new)
+                    .limit(messages.size())
+                    .peek(unchecked -> unchecked.setUser(connection.getUser()))
+                    .peek(unchecked -> unchecked.setChatId(chatId))
+                    .collect(Collectors.toList());
+
+            Iterator<Unchecked> uncheckedIterator = uncheckeds.iterator();
+            Iterator<Message> messagesIterator = messages.iterator();
+
+            while(uncheckedIterator.hasNext())
+                uncheckedIterator.next().setMessage(messagesIterator.next());
+
+            uncheckedRepository.saveAll(uncheckeds);
         }
     }
 
@@ -90,6 +104,26 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .map(Connection::getUser)
                 .mapToInt(User::getUserId)
                 .anyMatch(id -> message.getUserId() == id)) {
+            List<User> usersId = chatRepository.findById(chatId).get().getConnections()
+                    .stream()
+                    .map(Connection::getUser)
+                    .filter(user -> user.getUserId() != message.getUserId())
+                    .collect(Collectors.toList());
+
+            List<Unchecked> uncheckeds = Stream.generate(Unchecked::new)
+                    .limit(usersId.size())
+                    .peek(unchecked -> unchecked.setMessage(message))
+                    .peek(unchecked -> unchecked.setChatId(chatId))
+                    .collect(Collectors.toList());
+
+            Iterator<Unchecked> uncheckedIterator = uncheckeds.iterator();
+            Iterator<User> usersIterator = usersId.iterator();
+
+            while(uncheckedIterator.hasNext())
+                uncheckedIterator.next().setUser(usersIterator.next());
+
+            uncheckedRepository.saveAll(uncheckeds);
+
             Message result = messageRepository.save(message);
             result.toUserView();
             return result;
@@ -98,9 +132,14 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public List<Message> getAllMessageInCurrentChat(int chatId, int userId) {
-        return chatRepository.findById(chatId).get().getMessages()
-                .stream()
+    public List<Message> getAllMessage(int chatId, int userId) {
+        List<Unchecked> unchecked = userRepository.findById(userId).get().getUnchecked().parallelStream()
+                .filter(uncheck -> uncheck.getChatId() == chatId)
+                .collect(Collectors.toList());
+
+        uncheckedRepository.deleteAll(unchecked);
+
+        return chatRepository.findById(chatId).get().getMessages().stream()
                 .filter(message -> message.getLifetimeSec() == -1
                         || (LocalDateTime
                         .parse(message.getSendTime())
@@ -110,6 +149,18 @@ public class DatabaseServiceImpl implements DatabaseService {
                         .isBefore(LocalDateTime.now()))
                 .sorted(Comparator.comparing(Message::getSendTime).reversed())
                 .peek(Message::toUserView)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Message> getAllUnreadMessages(int chatId, int userId){
+        List<Unchecked> uncheckeds = userRepository.findById(userId).get().getUnchecked()
+                .parallelStream()
+                .filter(uncheck -> uncheck.getChatId() == chatId)
+                .collect(Collectors.toList());
+        uncheckedRepository.deleteAll(uncheckeds);
+        return uncheckeds.parallelStream()
+                .map(Unchecked::getMessage)
                 .collect(Collectors.toList());
     }
 }
