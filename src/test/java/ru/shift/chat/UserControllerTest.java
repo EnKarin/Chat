@@ -32,7 +32,8 @@ public class UserControllerTest {
     @Autowired
     DatabaseServiceImpl databaseService;
 
-    private final Gson gson = new Gson();
+    @Autowired
+    Gson gson;
 
     @Test
     public void getAllTest() throws Exception {
