@@ -177,38 +177,6 @@ public class MessageControllerTest {
     }
 
     @Test
-    public void uncheckedMessageInGeneralChat() throws Exception{
-        User first = new User();
-        first.setLastName("First");
-        first.setLastName("F");
-        first = databaseService.addUser(first);
-
-        User owner = new User();
-        owner.setFirstName("Owner");
-        owner.setLastName("O");
-        owner = databaseService.addUser(owner);
-
-        Map<String, String> map = new TreeMap<>();
-        map.put("chatId", "0");
-        map.put("userId", Integer.toString(owner.getUserId()));
-        map.put("text", "uncheckedMessageInGeneralChat");
-        map.put("sendTime", LocalDateTime.now().toString());
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/message")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(gson.toJson(map)).accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/messages/unread")
-                .param("chatId", "0")
-                .param("userId", Integer.toString(first.getUserId()))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].text", is("uncheckedMessageInGeneralChat")));
-    }
-
-    @Test
     public void uncheckedMessageInPrivateChat() throws Exception{
         Chat chat = new Chat();
         chat.setName("uncheckedMessageInPrivateChat chat");
