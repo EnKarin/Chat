@@ -25,7 +25,8 @@ public class ScheduledConfiguration {
                 .filter(message -> LocalDateTime
                         .parse(message.getSendTime())
                         .plusSeconds(message.getLifetimeSec())
-                        .isBefore(LocalDateTime.now()))
+                        .isBefore(LocalDateTime.now())
+                        && message.getLifetimeSec() != -1)
                 .map(Message::getMessageId)
                 .collect(Collectors.toList());
         messageRepository.deleteAllById(list);
