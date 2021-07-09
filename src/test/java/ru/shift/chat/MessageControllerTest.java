@@ -1,6 +1,7 @@
 package ru.shift.chat;
 
 import com.google.gson.Gson;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import ru.shift.chat.model.User;
 import ru.shift.chat.service.DatabaseServiceImpl;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static org.hamcrest.Matchers.*;
 
@@ -78,5 +81,81 @@ public class MessageControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].text", is(neededMessage.getText())));
+    }
+
+    @Test
+    public void saveUser() throws Exception{
+        Chat chat = new Chat();
+        chat.setName("Test chat");
+        chat = databaseService.addChat(chat);
+
+        User user = new User();
+        user.setLastName("A");
+        user.setLastName("B");
+        user = databaseService.addUser(user);
+
+        databaseService.enterChat(user.getUserId(), chat.getChatId());
+
+        Map<String, String> map = new TreeMap<>();
+        map.put("chatId", Integer.toString(chat.getChatId()));
+        map.put("userId", Integer.toString(user.getUserId()));
+        map.put("text", "Text");
+        map.put("sendTime", LocalDateTime.now().toString());
+        map.put("lifetimeSec", "2");
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/message")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(map))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("text", is("Text")));
+
+        Thread.sleep(2000);
+        Assert.assertTrue(databaseService.getAllMessageInCurrentChat(chat.getChatId()).stream()
+                .noneMatch(message -> message.getText().equals("Text")));
+    }
+
+    @Test
+    public void saveUserInNotExistChat() throws Exception{
+        User user = new User();
+        user.setLastName("A");
+        user.setLastName("B");
+        user = databaseService.addUser(user);
+
+        Map<String, String> map = new TreeMap<>();
+        map.put("chatId", "1000");
+        map.put("userId", Integer.toString(user.getUserId()));
+        map.put("text", "Text");
+        map.put("sendTime", LocalDateTime.now().toString());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/message")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(map))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
+    @Test
+    public void saveUserInNotExistConnection() throws Exception{
+        Chat chat = new Chat();
+        chat.setName("Test chat");
+        chat = databaseService.addChat(chat);
+
+        User user = new User();
+        user.setLastName("A");
+        user.setLastName("B");
+        user = databaseService.addUser(user);
+
+        Map<String, String> map = new TreeMap<>();
+        map.put("chatId", Integer.toString(chat.getChatId()));
+        map.put("userId", Integer.toString(user.getUserId()));
+        map.put("text", "Text");
+        map.put("sendTime", LocalDateTime.now().toString());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/message")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(map))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 }
