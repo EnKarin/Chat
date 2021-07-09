@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
+@Table(name = "message")
 public class Message {
 
     @ApiModelProperty(
@@ -45,10 +47,14 @@ public class Message {
     @JsonIgnore
     private int lifetimeSec;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "chatId")
     @JsonIgnore
     private Chat chat;
+
+    @OneToMany(mappedBy = "message")
+    @JsonIgnore
+    private List<Unchecked> unchecked;
 
     public void setChat(Chat chat) {
         this.chat = chat;

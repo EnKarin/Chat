@@ -39,6 +39,10 @@ public class User {
     @JsonIgnore
     private List<Connection> connections;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @JsonIgnore
+    private List<Unchecked> unchecked;
+
     public int getUserId() {
         return userId;
     }
