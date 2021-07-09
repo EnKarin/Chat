@@ -15,7 +15,7 @@ public class Unchecked {
     @JoinColumn(name = "userId")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "messageId")
     private Message message;
 
