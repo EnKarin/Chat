@@ -40,6 +40,9 @@ public class MessageController {
         message.setUserId(Integer.parseInt(map.get("userId")));
         message.setText(map.get("text"));
         message.setSendTime(LocalDateTime.now().toString());
+        if(map.size() > 3)
+            message.setLifetimeSec(Integer.parseInt(map.get("lifetimeSec")));
+        else message.setLifetimeSec(-1);
         return databaseService.addMessage(message, Integer.parseInt(map.get("chatId")));
     }
 
@@ -47,8 +50,6 @@ public class MessageController {
             response = List.class)
     @GetMapping("/messages")
     private List<Message> getMessages(@RequestParam(required = false) Integer chatId){
-        if(chatId == null)
-            chatId = 0;
-        return databaseService.getAllMessageInCurrentChat(chatId);
+        return databaseService.getAllMessageInCurrentChat(chatId == null? 0: chatId);
     }
 }

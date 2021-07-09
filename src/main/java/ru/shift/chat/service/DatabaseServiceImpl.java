@@ -12,9 +12,11 @@ import ru.shift.chat.repository.ConnectionRepository;
 import ru.shift.chat.repository.MessageRepository;
 import ru.shift.chat.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
@@ -86,17 +88,22 @@ public class DatabaseServiceImpl implements DatabaseService {
         if (!message.getChat().getConnections().isEmpty() && (chatId == 0 || message.getChat().getConnections().stream()
                 .map(Connection::getUser)
                 .mapToInt(User::getUserId)
-                .anyMatch(id -> message.getUserId() == id))) {
+                .anyMatch(id -> message.getUserId() == id)))
             return messageRepository.save(message);
-        }
         throw new ChatNotFoundException();
     }
 
     @Override
     public List<Message> getAllMessageInCurrentChat(int idChat) {
-        List<Message> list = chatRepository.findById(idChat).get().getMessages();
-        list.sort(Comparator.comparing(Message::getSendTime).reversed());
-        return list;
+        return chatRepository.findById(idChat).get().getMessages()
+                .stream()
+                .filter(message -> message.getLifetimeSec() == -1
+                        || (LocalDateTime
+                        .parse(message.getSendTime())
+                        .plusSeconds(message.getLifetimeSec())
+                        .isAfter(LocalDateTime.now())))
+                .sorted(Comparator.comparing(Message::getSendTime).reversed())
+                .collect(Collectors.toList());
     }
 
     public List<User> findByFirstName(final String firstName) {
