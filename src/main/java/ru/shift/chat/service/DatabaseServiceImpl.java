@@ -97,6 +97,9 @@ public class DatabaseServiceImpl implements DatabaseService {
         throw new ChatNotFoundException();
     }
 
+    //периодическое удаление c учетом задержки
+    //фильтр задержанных + удаляющихся
+
     @Override
     public List<Message> getAllMessageInCurrentChat(int idChat) {
         return chatRepository.findById(idChat).get().getMessages()
@@ -106,16 +109,10 @@ public class DatabaseServiceImpl implements DatabaseService {
                         .parse(message.getSendTime())
                         .plusSeconds(message.getLifetimeSec())
                         .isAfter(LocalDateTime.now())))
+                .filter(message -> LocalDateTime.parse(message.getSendTime())
+                        .isBefore(LocalDateTime.now()))
                 .sorted(Comparator.comparing(Message::getSendTime).reversed())
                 .peek(Message::toUserView)
                 .collect(Collectors.toList());
-    }
-
-    public List<User> findByFirstName(final String firstName) {
-        return userRepository.findByFirstName(firstName);
-    }
-
-    public List<User> findByLastName(final String lastName) {
-        return userRepository.findByLastName(lastName);
     }
 }

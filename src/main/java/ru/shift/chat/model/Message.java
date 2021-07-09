@@ -30,11 +30,9 @@ public class Message {
             name = "text",
             dataType = "String",
             example = "Hello!")
-    @JsonIgnore
     @Column
     private String text;
 
-    @JsonIgnore
     @Column
     private String sendTime;
 
@@ -44,10 +42,8 @@ public class Message {
             dataType = "int",
             example = "60")
     @Column
+    @JsonIgnore
     private int lifetimeSec;
-
-    @Column
-    private int delaySec;
 
     @ManyToOne()
     @JoinColumn(name = "chatId")
@@ -62,7 +58,7 @@ public class Message {
         return chat;
     }
 
-    public void toUserView(){
+    public void toUserView() {
         sendTime = sendTime.replace('T', ' ');
     }
 
@@ -100,13 +96,5 @@ public class Message {
 
     public int getLifetimeSec() {
         return lifetimeSec;
-    }
-
-    public void setDelaySec(int delaySec) {
-        this.delaySec = delaySec;
-    }
-
-    public int getDelaySec() {
-        return delaySec;
     }
 }
