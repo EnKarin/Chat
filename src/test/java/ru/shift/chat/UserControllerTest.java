@@ -57,7 +57,8 @@ public class UserControllerTest {
     @Test
     public void getNonExistUser() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/user/0").accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+                .andExpect(MockMvcResultMatchers.jsonPath("code", is(equalTo("INCORRECT_ID"))));
     }
 
     @Test
@@ -84,6 +85,48 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(gson.toJson(user))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+                .andExpect(MockMvcResultMatchers.jsonPath("code", is(equalTo("INCOMPLETE_INPUT"))));
+    }
+
+    @Test
+    public void updateUser() throws Exception{
+        User user = new User();
+        user.setFirstName("C");
+        user.setLastName("B");
+        mockMvc.perform(MockMvcRequestBuilders.put("/user/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(user))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("userId", is(equalTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("firstName", is(equalTo("C"))))
+                .andExpect(MockMvcResultMatchers.jsonPath("lastName", is(equalTo("B"))));
+    }
+
+    @Test
+    public void updateNotValidUser() throws Exception{
+        User user = new User();
+        user.setFirstName("C");
+        user.setLastName(" ");
+        mockMvc.perform(MockMvcRequestBuilders.put("/user/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(user))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+                .andExpect(MockMvcResultMatchers.jsonPath("code", is(equalTo("INCOMPLETE_INPUT"))));
+    }
+
+    @Test
+    public void updateNotExistId() throws Exception{
+        User user = new User();
+        user.setFirstName("C");
+        user.setLastName("C");
+        mockMvc.perform(MockMvcRequestBuilders.put("/user/0")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(user))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+                .andExpect(MockMvcResultMatchers.jsonPath("code", is(equalTo("INCORRECT_ID"))));
     }
 }

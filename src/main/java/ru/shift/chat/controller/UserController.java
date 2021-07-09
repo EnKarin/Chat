@@ -1,5 +1,6 @@
 package ru.shift.chat.controller;
 
+import com.google.gson.Gson;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -13,17 +14,21 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import ru.shift.chat.enums.ErrorCode;
 import ru.shift.chat.enums.TagsConstant;
+import ru.shift.chat.exception.ChatNotFoundException;
 import ru.shift.chat.model.ErrorDTO;
 import ru.shift.chat.model.User;
 import ru.shift.chat.service.DatabaseService;
 import ru.shift.chat.service.ValidatorImpl;
+import springfox.documentation.spring.web.json.Json;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
 @Validated
 @Api(tags = {TagsConstant.USER_TAG})
+@ControllerAdvice
 public class UserController {
 
     @Autowired
@@ -32,10 +37,31 @@ public class UserController {
     @Autowired
     ValidatorImpl validator;
 
+    @Autowired
+    Gson gson;
+
     @InitBinder
     private void initBinder(WebDataBinder binder) {
         binder.setValidator(validator);
     }
+
+    @ExceptionHandler({IllegalArgumentException.class})
+    private ResponseEntity<?> notFound() {
+        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.INCOMPLETE_INPUT)),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({Exception.class})
+    private ResponseEntity<?> unknownError() {
+        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.UNKNOWN_ERROR)),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler({NoSuchElementException.class})
+    private ResponseEntity<?> noSuchElementError() {
+        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.INCORRECT_ID)), HttpStatus.NOT_FOUND);
+    }
+
 
     @ApiOperation(value = "Saving a user", tags = "saveOrUpdateUser")
     @ApiResponses(value = {
@@ -43,17 +69,11 @@ public class UserController {
             @ApiResponse(code = 400, message = "Incorrect data"),
             @ApiResponse(code = 500, message = "Connection error")})
     @PostMapping("/user")
-    private ResponseEntity<?> saveUser(@RequestBody @Valid User user, BindingResult result){
-        try {
-            if(result.hasErrors()){
-                return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCOMPLETE_INPUT),
-                        HttpStatus.BAD_REQUEST);
-            }
-            return new ResponseEntity<>(databaseService.addUser(user),HttpStatus.OK);
-        } catch (Exception ignored){
-            return new ResponseEntity<>(new ErrorDTO(ErrorCode.UNKNOWN_ERROR),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+    private User saveUser(@RequestBody @Valid User user, BindingResult result) {
+        if (result.hasErrors()) {
+            throw new IllegalArgumentException();
         }
+        return databaseService.addUser(user);
     }
 
     @ApiOperation(value = "Getting a list of all users", tags = "getUser")
@@ -61,13 +81,8 @@ public class UserController {
             @ApiResponse(code = 200, message = "Success|OK"),
             @ApiResponse(code = 500, message = "Connection error")})
     @GetMapping("/users")
-    private ResponseEntity<?> getAllUser(){
-        try {
-            return new ResponseEntity<>(databaseService.getAllUsers(), HttpStatus.OK);
-        } catch (Exception ignored){
-            return new ResponseEntity<>(new ErrorDTO(ErrorCode.UNKNOWN_ERROR),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    private List<User> getAllUser() {
+        return databaseService.getAllUsers();
     }
 
     @ApiOperation(value = "Getting a user by his id", tags = "getUser")
@@ -76,16 +91,8 @@ public class UserController {
             @ApiResponse(code = 400, message = "Incorrect id"),
             @ApiResponse(code = 500, message = "Connection error")})
     @GetMapping("/user/{userId}")
-    private ResponseEntity<?> getUser(@PathVariable int userId){
-        try{
-            return new ResponseEntity<>(databaseService.getUser(userId), HttpStatus.OK);
-        } catch (NoSuchElementException e){
-            return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCORRECT_ID),
-                    HttpStatus.BAD_REQUEST);
-        } catch (Exception ignored){
-            return new ResponseEntity<>(new ErrorDTO(ErrorCode.UNKNOWN_ERROR),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    private User getUser(@PathVariable int userId) {
+        return databaseService.getUser(userId);
     }
 
     @ApiOperation(value = "Editing user by id", tags = "saveOrUpdateUser")
@@ -94,21 +101,12 @@ public class UserController {
             @ApiResponse(code = 400, message = "Incorrect id or data"),
             @ApiResponse(code = 500, message = "Connection error")})
     @PutMapping("/user/{userId}")
-    private ResponseEntity<?> updateUser(@PathVariable int userId,
-                                              @RequestBody @Valid User user,
-                                              BindingResult result){
-        if(result.hasErrors()){
-            return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCOMPLETE_INPUT),
-                    HttpStatus.BAD_REQUEST);
+    private User updateUser(@PathVariable int userId,
+                                         @RequestBody @Valid User user,
+                                         BindingResult result) {
+        if (result.hasErrors()) {
+            throw new IllegalArgumentException();
         }
-        try {
-            return new ResponseEntity<>(databaseService.updateUser(userId, user), HttpStatus.OK);
-        } catch (NoSuchElementException e){
-            return new ResponseEntity<>(new ErrorDTO(ErrorCode.INCORRECT_ID),
-                    HttpStatus.BAD_REQUEST);
-        } catch (Exception ignored){
-            return new ResponseEntity<>(new ErrorDTO(ErrorCode.UNKNOWN_ERROR),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return databaseService.updateUser(userId, user);
     }
 }

@@ -8,4 +8,8 @@ public class ErrorDTO {
     public ErrorDTO(ErrorCode errorCode) {
         this.code = errorCode.name();
     }
+
+    public String getCode() {
+        return code;
+    }
 }
