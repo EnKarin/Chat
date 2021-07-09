@@ -14,12 +14,10 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import ru.shift.chat.enums.ErrorCode;
 import ru.shift.chat.enums.TagsConstant;
-import ru.shift.chat.exception.ChatNotFoundException;
 import ru.shift.chat.model.ErrorDTO;
 import ru.shift.chat.model.User;
 import ru.shift.chat.service.DatabaseService;
 import ru.shift.chat.service.ValidatorImpl;
-import springfox.documentation.spring.web.json.Json;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -28,7 +26,6 @@ import java.util.NoSuchElementException;
 @RestController
 @Validated
 @Api(tags = {TagsConstant.USER_TAG})
-@ControllerAdvice
 public class UserController {
 
     @Autowired
