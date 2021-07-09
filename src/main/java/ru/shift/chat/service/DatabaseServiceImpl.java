@@ -98,8 +98,8 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public List<Message> getAllMessageInCurrentChat(int idChat) {
-        return chatRepository.findById(idChat).get().getMessages()
+    public List<Message> getAllMessageInCurrentChat(int chatId, int userId) {
+        return chatRepository.findById(chatId).get().getMessages()
                 .stream()
                 .filter(message -> message.getLifetimeSec() == -1
                         || (LocalDateTime

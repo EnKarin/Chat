@@ -2,6 +2,8 @@ package ru.shift.chat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.List;
@@ -36,10 +38,12 @@ public class User {
     private String lastName;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @Fetch(value = FetchMode.SUBSELECT)
     @JsonIgnore
     private List<Connection> connections;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @Fetch(value = FetchMode.SUBSELECT)
     @JsonIgnore
     private List<Unchecked> unchecked;
 

@@ -53,6 +53,6 @@ public class MessageController {
             response = List.class)
     @GetMapping("/messages")
     private List<Message> getMessages(@RequestParam(required = false) Integer chatId){
-        return databaseService.getAllMessageInCurrentChat(chatId == null? 0: chatId);
+        return databaseService.getAllMessageInCurrentChat(chatId == null? 0: chatId, 0); // don't working version
     }
 }

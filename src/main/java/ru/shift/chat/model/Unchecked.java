@@ -11,11 +11,11 @@ public class Unchecked {
     @Column
     private int chatId;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "userId")
     private User user;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "messageId")
     private Message message;
 

@@ -111,7 +111,7 @@ public class MessageControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("text", is("Text")));
 
         Thread.sleep(2000);
-        Assert.assertTrue(databaseService.getAllMessageInCurrentChat(chat.getChatId()).stream()
+        Assert.assertTrue(databaseService.getAllMessageInCurrentChat(chat.getChatId(), user.getUserId()).stream()
                 .noneMatch(message -> message.getText().equals("Text")));
     }
 
@@ -157,5 +157,20 @@ public class MessageControllerTest {
                 .content(gson.toJson(map))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
+    @Test
+    public void uncheckedMessage(){
+
+    }
+
+    @Test
+    public void canCheckedMessage(){
+
+    }
+
+    @Test
+    public void uncheckedMessageWithMultiUser(){
+
     }
 }
