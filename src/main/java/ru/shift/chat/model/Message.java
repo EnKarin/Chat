@@ -57,6 +57,10 @@ public class Message {
         return chat;
     }
 
+    public void toUserView(){
+        sendTime = sendTime.replace('T', ' ');
+    }
+
     public int getMessageId() {
         return messageId;
     }
@@ -78,7 +82,7 @@ public class Message {
     }
 
     public String getSendTime() {
-        return sendTime.replace('T', ' ');
+        return sendTime;
     }
 
     public void setSendTime(String sendTime) {

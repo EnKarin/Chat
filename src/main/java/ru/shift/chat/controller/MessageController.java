@@ -40,7 +40,7 @@ public class MessageController {
         message.setUserId(Integer.parseInt(map.get("userId")));
         message.setText(map.get("text"));
         message.setSendTime(LocalDateTime.now().toString());
-        if(map.size() > 3)
+        if(map.containsKey("lifetimeSec"))
             message.setLifetimeSec(Integer.parseInt(map.get("lifetimeSec")));
         else message.setLifetimeSec(-1);
         return databaseService.addMessage(message, Integer.parseInt(map.get("chatId")));
