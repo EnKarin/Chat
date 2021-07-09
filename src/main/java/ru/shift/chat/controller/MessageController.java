@@ -35,14 +35,17 @@ public class MessageController {
             @ApiResponse(code = 404, message = "Chat not found")})
     @PostMapping("/message")
     private Message saveMessage(@RequestBody Map<String, String> map) throws ChatNotFoundException{
+        LocalDateTime localDateTime = LocalDateTime.now();
         map.putIfAbsent("chatId", "0");
         Message message = new Message();
         message.setUserId(Integer.parseInt(map.get("userId")));
         message.setText(map.get("text"));
-        message.setSendTime(LocalDateTime.now().toString());
         if(map.containsKey("lifetimeSec"))
             message.setLifetimeSec(Integer.parseInt(map.get("lifetimeSec")));
         else message.setLifetimeSec(-1);
+        if(map.containsKey("delaySec"))
+            message.setSendTime(localDateTime.plusSeconds(Long.parseLong(map.get("delaySec"))).toString());
+        else message.setSendTime(localDateTime.toString());
         return databaseService.addMessage(message, Integer.parseInt(map.get("chatId")));
     }
 
