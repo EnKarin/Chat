@@ -56,8 +56,8 @@ public class MessageController {
             @ApiResponse(code = 404, message = "Chat or user not found")})
     @GetMapping("/messages")
     private List<Message> getMessages(@RequestParam Integer userId,
-                                      @RequestParam(required = false) Integer chatId){
-        return databaseService.getAllMessage(chatId == null? 0: chatId, userId);
+                                      @RequestParam(required = false, value = "0") Integer chatId){
+        return databaseService.getAllMessage(chatId, userId);
     }
 
     @ApiOperation(value = "Returns unread messages for the given user in the specified chat",
@@ -66,8 +66,8 @@ public class MessageController {
             @ApiResponse(code = 200, message = "Success|OK"),
             @ApiResponse(code = 404, message = "Chat or user not found")})
     @GetMapping("/messages/unread")
-    private List<Message> getUnreadMessages(@PathVariable int userId,
-                                           @PathVariable(required = false, value = "0") int chatId){
+    private List<Message> getUnreadMessages(@RequestParam Integer userId,
+                                           @RequestParam(required = false, value = "0") Integer chatId){
         return databaseService.getAllUnreadMessages(userId, chatId);
     }
 }
