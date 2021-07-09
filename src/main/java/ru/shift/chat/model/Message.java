@@ -36,6 +36,14 @@ public class Message {
     @Column
     private String sendTime;
 
+    @ApiModelProperty(
+            value = "The lifetime of the message. If -1, then the time is not limited",
+            name = "lifetimeSec",
+            dataType = "int",
+            example = "60")
+    @Column
+    private int lifetimeSec;
+
     @ManyToOne()
     @JoinColumn(name = "chatId")
     @JsonIgnore
@@ -75,5 +83,13 @@ public class Message {
 
     public void setSendTime(String sendTime) {
         this.sendTime = sendTime;
+    }
+
+    public void setLifetimeSec(int lifetimeSec) {
+        this.lifetimeSec = lifetimeSec;
+    }
+
+    public int getLifetimeSec() {
+        return lifetimeSec;
     }
 }
