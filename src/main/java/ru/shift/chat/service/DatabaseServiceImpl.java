@@ -97,9 +97,6 @@ public class DatabaseServiceImpl implements DatabaseService {
         throw new ChatNotFoundException();
     }
 
-    //периодическое удаление c учетом задержки
-    //фильтр задержанных + удаляющихся
-
     @Override
     public List<Message> getAllMessageInCurrentChat(int idChat) {
         return chatRepository.findById(idChat).get().getMessages()
