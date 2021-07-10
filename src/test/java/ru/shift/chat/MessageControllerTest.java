@@ -56,8 +56,8 @@ public class MessageControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/messages")
                 .accept(MediaType.APPLICATION_JSON)
-                .param("chatId", Integer.toString(chat.getChatId()))
-                .param("userId", "0"))
+                .param("userId", "0")
+                .param("chatId", Integer.toString(chat.getChatId())))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
