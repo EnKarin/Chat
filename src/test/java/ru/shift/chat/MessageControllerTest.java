@@ -215,6 +215,10 @@ public class MessageControllerTest {
 
     @Test
     public void canCheckedMessage() throws Exception{
+        Chat chat = new Chat();
+        chat.setName("canCheckedMessage chat");
+        chat = databaseService.addChat(chat);
+
         User first = new User();
         first.setLastName("First");
         first.setLastName("F");
@@ -225,8 +229,11 @@ public class MessageControllerTest {
         owner.setLastName("O");
         owner = databaseService.addUser(owner);
 
+        databaseService.enterChat(owner.getUserId(), chat.getChatId());
+        databaseService.enterChat(first.getUserId(), chat.getChatId());
+
         Map<String, String> map = new TreeMap<>();
-        map.put("chatId", "0");
+        map.put("chatId", Integer.toString(chat.getChatId()));
         map.put("userId", Integer.toString(owner.getUserId()));
         map.put("text", "canCheckedMessage");
 
@@ -236,7 +243,7 @@ public class MessageControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/messages/unread")
-                .param("chatId", "0")
+                .param("chatId", Integer.toString(chat.getChatId()))
                 .param("userId", Integer.toString(first.getUserId()))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -245,7 +252,7 @@ public class MessageControllerTest {
                         is("canCheckedMessage")));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/messages/unread")
-                .param("chatId", "0")
+                .param("chatId", Integer.toString(chat.getChatId()))
                 .param("userId", Integer.toString(first.getUserId()))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -253,7 +260,11 @@ public class MessageControllerTest {
     }
 
     @Test
-    public void uncheckedMessageWithMultiUser() throws Exception{
+    public void uncheckedMessageWithMultiUser() throws Exception {
+        Chat chat = new Chat();
+        chat.setName("uncheckedMessageWithMultiUser chat");
+        chat = databaseService.addChat(chat);
+
         User first = new User();
         first.setLastName("First");
         first.setLastName("F");
@@ -269,8 +280,12 @@ public class MessageControllerTest {
         second.setLastName("F");
         second = databaseService.addUser(second);
 
+        databaseService.enterChat(owner.getUserId(), chat.getChatId());
+        databaseService.enterChat(first.getUserId(), chat.getChatId());
+        databaseService.enterChat(second.getUserId(), chat.getChatId());
+
         Map<String, String> map = new TreeMap<>();
-        map.put("chatId", "0");
+        map.put("chatId", Integer.toString(chat.getChatId()));
         map.put("userId", Integer.toString(owner.getUserId()));
         map.put("text", "uncheckedMessageWithMultiUser");
 
@@ -280,7 +295,7 @@ public class MessageControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/messages/unread")
-                .param("chatId", "0")
+                .param("chatId", Integer.toString(chat.getChatId()))
                 .param("userId", Integer.toString(first.getUserId()))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -289,12 +304,172 @@ public class MessageControllerTest {
                         is("uncheckedMessageWithMultiUser")));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/messages/unread")
-                .param("chatId", "0")
+                .param("chatId", Integer.toString(chat.getChatId()))
                 .param("userId", Integer.toString(second.getUserId()))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].text",
                         is("uncheckedMessageWithMultiUser")));
+    }
+
+    @Test
+    public void uncheckedMessageWithDelayTime() throws Exception{
+        Chat chat = new Chat();
+        chat.setName("uncheckedMessageWithDelayTime chat");
+        chat = databaseService.addChat(chat);
+
+        User first = new User();
+        first.setLastName("First");
+        first.setLastName("F");
+        first = databaseService.addUser(first);
+
+        User owner = new User();
+        owner.setFirstName("Owner");
+        owner.setLastName("O");
+        owner = databaseService.addUser(owner);
+
+        databaseService.enterChat(owner.getUserId(), chat.getChatId());
+        databaseService.enterChat(first.getUserId(), chat.getChatId());
+
+        Map<String, String> map = new TreeMap<>();
+        map.put("chatId", Integer.toString(chat.getChatId()));
+        map.put("userId", Integer.toString(owner.getUserId()));
+        map.put("text", "uncheckedMessageWithDelayTime");
+        map.put("delayTime", "10");
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/message")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(map)).accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/messages/unread")
+                .param("chatId", Integer.toString(chat.getChatId()))
+                .param("userId", Integer.toString(first.getUserId()))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    public void uncheckedMessageForItOwner() throws Exception{
+        Chat chat = new Chat();
+        chat.setName("uncheckedMessageForItOwner chat");
+        chat = databaseService.addChat(chat);
+
+        User owner = new User();
+        owner.setFirstName("Owner");
+        owner.setLastName("O");
+        owner = databaseService.addUser(owner);
+
+        databaseService.enterChat(owner.getUserId(), chat.getChatId());
+
+        Map<String, String> map = new TreeMap<>();
+        map.put("chatId", Integer.toString(chat.getChatId()));
+        map.put("userId", Integer.toString(owner.getUserId()));
+        map.put("text", "uncheckedMessageForItOwner");
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/message")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(map)).accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/messages/unread")
+                .param("chatId", Integer.toString(chat.getChatId()))
+                .param("userId", Integer.toString(owner.getUserId()))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    public void uncheckedMessageWithLifeTime() throws Exception{
+        Chat chat = new Chat();
+        chat.setName("Test chat");
+        chat = databaseService.addChat(chat);
+
+        User user = new User();
+        user.setLastName("A");
+        user.setLastName("B");
+        user = databaseService.addUser(user);
+
+        User owner = new User();
+        owner.setFirstName("Owner");
+        owner.setLastName("O");
+        owner = databaseService.addUser(owner);
+
+        databaseService.enterChat(user.getUserId(), chat.getChatId());
+        databaseService.enterChat(owner.getUserId(), chat.getChatId());
+
+        MessageDTO messageForDelete = new MessageDTO();
+        messageForDelete.setChatId(chat.getChatId());
+        messageForDelete.setText("Odd message");
+        messageForDelete.setLifetimeSec(1);
+        messageForDelete.setUserId(owner.getUserId());
+        messageForDelete.setSendTime(LocalDateTime.now().minusSeconds(1).toString());
+
+        MessageDTO neededMessage = new MessageDTO();
+        neededMessage.setLifetimeSec(5);
+        neededMessage.setChatId(chat.getChatId());
+        neededMessage.setText("Needed message");
+        neededMessage.setUserId(owner.getUserId());
+        neededMessage.setSendTime(LocalDateTime.now().minusSeconds(1).toString());
+
+        databaseService.addMessage(messageForDelete);
+        databaseService.addMessage(neededMessage);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/messages/unread")
+                .param("chatId", Integer.toString(chat.getChatId()))
+                .param("userId", Integer.toString(user.getUserId()))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].text", is(neededMessage.getText())));
+    }
+
+    @Test
+    public void getAllMessageAndGetUnread() throws Exception {
+        Chat chat = new Chat();
+        chat.setName("getAllMessageAndGetUnread chat");
+        chat = databaseService.addChat(chat);
+
+        User first = new User();
+        first.setLastName("First");
+        first.setLastName("F");
+        first = databaseService.addUser(first);
+
+        User owner = new User();
+        owner.setFirstName("Owner");
+        owner.setLastName("O");
+        owner = databaseService.addUser(owner);
+
+        databaseService.enterChat(owner.getUserId(), chat.getChatId());
+        databaseService.enterChat(first.getUserId(), chat.getChatId());
+
+        Map<String, String> map = new TreeMap<>();
+        map.put("chatId", Integer.toString(chat.getChatId()));
+        map.put("userId", Integer.toString(owner.getUserId()));
+        map.put("text", "getAllMessageAndGetUnread");
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/message")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(map)).accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/messages")
+                .param("chatId", Integer.toString(chat.getChatId()))
+                .param("userId", Integer.toString(first.getUserId()))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].text",
+                        is("getAllMessageAndGetUnread")));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/messages/unread")
+                .param("chatId", Integer.toString(chat.getChatId()))
+                .param("userId", Integer.toString(first.getUserId()))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(0)));
     }
 }
