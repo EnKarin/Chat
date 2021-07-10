@@ -1,4 +1,4 @@
-package ru.shift.chat.model;
+package ru.shift.chat.DTO;
 
 import ru.shift.chat.enums.ErrorCode;
 

@@ -2,6 +2,7 @@ package ru.shift.chat.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.shift.chat.DTO.MessageDTO;
 import ru.shift.chat.exception.ChatNotFoundException;
 import ru.shift.chat.model.*;
 import ru.shift.chat.repository.*;
@@ -97,14 +98,21 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public Message addMessage(Message message, int chatId) throws ChatNotFoundException {
-        message.setChat(chatRepository.findById(chatId).get());
-        if (chatId == 0
+    public Message addMessage(MessageDTO messageDTO) throws ChatNotFoundException {
+
+        Message message = new Message();
+        message.setText(messageDTO.getText());
+        message.setUserId(messageDTO.getUserId());
+        message.setSendTime(messageDTO.getSendTime());
+        message.setLifetimeSec(messageDTO.getLifetimeSec());
+        message.setChat(chatRepository.findById(messageDTO.getChatId()).get());
+
+        if (messageDTO.getChatId() == 0
                 || message.getChat().getConnections().stream()
                 .map(Connection::getUser)
                 .mapToInt(User::getUserId)
                 .anyMatch(id -> message.getUserId() == id)) {
-            List<User> usersId = chatRepository.findById(chatId).get().getConnections()
+            List<User> usersId = chatRepository.findById(messageDTO.getChatId()).get().getConnections()
                     .stream()
                     .map(Connection::getUser)
                     .filter(user -> user.getUserId() != message.getUserId())
@@ -113,7 +121,7 @@ public class DatabaseServiceImpl implements DatabaseService {
             List<Unchecked> uncheckeds = Stream.generate(Unchecked::new)
                     .limit(usersId.size())
                     .peek(unchecked -> unchecked.setMessage(message))
-                    .peek(unchecked -> unchecked.setChatId(chatId))
+                    .peek(unchecked -> unchecked.setChatId(messageDTO.getChatId()))
                     .collect(Collectors.toList());
 
             Iterator<Unchecked> uncheckedIterator = uncheckeds.iterator();
