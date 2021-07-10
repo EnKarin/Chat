@@ -45,7 +45,14 @@ public class MessageControllerTest {
 
     @Test
     public void getMessageInNotExistChat() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get("/messages").accept(MediaType.APPLICATION_JSON))
+        User user = new User();
+        user.setLastName("Us");
+        user.setLastName("Us");
+        user = databaseService.addUser(user);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/messages")
+                .accept(MediaType.APPLICATION_JSON)
+                .param("userId", Integer.toString(user.getUserId())))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
@@ -336,7 +343,7 @@ public class MessageControllerTest {
         map.put("chatId", Integer.toString(chat.getChatId()));
         map.put("userId", Integer.toString(owner.getUserId()));
         map.put("text", "uncheckedMessageWithDelayTime");
-        map.put("delayTime", "10");
+        map.put("delaySec", "10");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/message")
                 .contentType(MediaType.APPLICATION_JSON)
