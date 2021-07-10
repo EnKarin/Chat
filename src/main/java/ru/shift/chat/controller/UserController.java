@@ -14,7 +14,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import ru.shift.chat.enums.ErrorCode;
 import ru.shift.chat.enums.TagsConstant;
-import ru.shift.chat.model.ErrorDTO;
+import ru.shift.chat.DTO.ErrorDTO;
 import ru.shift.chat.model.User;
 import ru.shift.chat.service.DatabaseService;
 import ru.shift.chat.service.ValidatorImpl;
