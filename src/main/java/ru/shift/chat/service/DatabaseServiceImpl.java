@@ -3,7 +3,7 @@ package ru.shift.chat.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.shift.chat.DTO.MessageDTO;
-import ru.shift.chat.exception.ChatNotFoundException;
+import ru.shift.chat.exception.ConnectionNotFoundException;
 import ru.shift.chat.model.*;
 import ru.shift.chat.repository.*;
 
@@ -98,7 +98,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public Message addMessage(MessageDTO messageDTO) throws ChatNotFoundException {
+    public Message addMessage(MessageDTO messageDTO) throws ConnectionNotFoundException {
         Message message = new Message();
         message.setText(messageDTO.getText());
         message.setUserId(messageDTO.getUserId());
@@ -135,7 +135,7 @@ public class DatabaseServiceImpl implements DatabaseService {
             result.toUserView();
             return result;
         }
-        throw new ChatNotFoundException();
+        throw new ConnectionNotFoundException();
     }
 
     @Override

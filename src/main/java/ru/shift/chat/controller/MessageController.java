@@ -1,15 +1,19 @@
 package ru.shift.chat.controller;
 
+import com.google.gson.Gson;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.shift.chat.DTO.ErrorDTO;
 import ru.shift.chat.DTO.MessageDTO;
+import ru.shift.chat.enums.ErrorCode;
 import ru.shift.chat.enums.TagsConstant;
-import ru.shift.chat.exception.ChatNotFoundException;
+import ru.shift.chat.exception.ConnectionNotFoundException;
 import ru.shift.chat.model.Message;
 import ru.shift.chat.service.DatabaseService;
 
@@ -24,17 +28,37 @@ public class MessageController {
     @Autowired
     DatabaseService databaseService;
 
-    @ResponseStatus(value= HttpStatus.NOT_FOUND)
-    @ExceptionHandler({ChatNotFoundException.class, NoSuchElementException.class})
-    private void notFound(){}
+    @Autowired
+    Gson gson;
+
+    @ExceptionHandler({ConnectionNotFoundException.class})
+    private ResponseEntity<?> connectNotFound() {
+        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.ACCESS_ERROR)),
+                HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler({Exception.class})
+    private ResponseEntity<?> unknownError() {
+        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.UNKNOWN_ERROR)),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler({NoSuchElementException.class})
+    private ResponseEntity<?> noSuchElementError() {
+        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.INCORRECT_ID)),
+                HttpStatus.NOT_FOUND);
+    }
 
     @ApiOperation(value = "Sending a message to the specified chat. If the chat is not specified, then the general",
             response = Message.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success|OK"),
-            @ApiResponse(code = 404, message = "Chat or user not found")})
+            @ApiResponse(code = 403, message = "No chat access"),
+            @ApiResponse(code = 404, message = "Chat or user not found"),
+            @ApiResponse(code = 500, message = "Unknown server error")
+    })
     @PostMapping("/message")
-    private Message saveMessage(@RequestBody MessageDTO messageDTO) throws ChatNotFoundException{
+    private Message saveMessage(@RequestBody MessageDTO messageDTO) throws ConnectionNotFoundException {
         messageDTO.setSendTime(LocalDateTime.now().plusSeconds(messageDTO.getDelaySec()).toString());
         if(messageDTO.getLifetimeSec() == null) messageDTO.setLifetimeSec(-1);
         return databaseService.addMessage(messageDTO);

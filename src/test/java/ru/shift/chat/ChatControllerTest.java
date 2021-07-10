@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.context.WebApplicationContext;
 import ru.shift.chat.DTO.MessageDTO;
-import ru.shift.chat.exception.ChatNotFoundException;
+import ru.shift.chat.exception.ConnectionNotFoundException;
 import ru.shift.chat.model.Chat;
 import ru.shift.chat.model.User;
 import ru.shift.chat.service.DatabaseServiceImpl;
@@ -87,6 +87,6 @@ public class ChatControllerTest {
         message.setSendTime(LocalDateTime.now().toString());
         message.setLifetimeSec(-1);
 
-        Assert.assertThrows(ChatNotFoundException.class, () -> databaseService.addMessage(message));
+        Assert.assertThrows(ConnectionNotFoundException.class, () -> databaseService.addMessage(message));
     }
 }
