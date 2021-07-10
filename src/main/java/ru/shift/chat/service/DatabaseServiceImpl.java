@@ -164,10 +164,19 @@ public class DatabaseServiceImpl implements DatabaseService {
         List<Unchecked> uncheckeds = userRepository.findById(userId).get().getUnchecked()
                 .parallelStream()
                 .filter(uncheck -> uncheck.getChatId() == chatId)
+                .filter(unchecked -> unchecked.getMessage().getLifetimeSec() == -1
+                        || (LocalDateTime
+                        .parse(unchecked.getMessage().getSendTime())
+                        .plusSeconds(unchecked.getMessage().getLifetimeSec())
+                        .isAfter(LocalDateTime.now())))
+                .filter(unchecked -> LocalDateTime.parse(unchecked.getMessage().getSendTime())
+                        .isBefore(LocalDateTime.now()))
                 .collect(Collectors.toList());
         uncheckedRepository.deleteAll(uncheckeds);
         return uncheckeds.parallelStream()
                 .map(Unchecked::getMessage)
+                .sorted(Comparator.comparing(Message::getSendTime).reversed())
+                .peek(Message::toUserView)
                 .collect(Collectors.toList());
     }
 }
