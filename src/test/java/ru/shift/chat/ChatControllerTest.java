@@ -14,16 +14,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.context.WebApplicationContext;
+import ru.shift.chat.DTO.MessageDTO;
 import ru.shift.chat.exception.ChatNotFoundException;
 import ru.shift.chat.model.Chat;
-import ru.shift.chat.model.Message;
 import ru.shift.chat.model.User;
 import ru.shift.chat.service.DatabaseServiceImpl;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 @ContextConfiguration(classes = {ChatApplication.class})
 @WebAppConfiguration
@@ -79,12 +80,13 @@ public class ChatControllerTest {
         .contentType(MediaType.APPLICATION_JSON).content(gson.toJson(map)).accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Message message = new Message();
+        MessageDTO message = new MessageDTO();
         message.setText("Test message");
-        message.setChat(chat);
+        message.setChatId(chat.getChatId());
         message.setUserId(user.getUserId());
+        message.setSendTime(LocalDateTime.now().toString());
+        message.setLifetimeSec(-1);
 
-        Chat finalChat = chat;
-        Assert.assertThrows(ChatNotFoundException.class, () -> databaseService.addMessage(message, finalChat.getChatId()));
+        Assert.assertThrows(ChatNotFoundException.class, () -> databaseService.addMessage(message));
     }
 }

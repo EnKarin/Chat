@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.context.WebApplicationContext;
+import ru.shift.chat.DTO.MessageDTO;
 import ru.shift.chat.model.Chat;
 import ru.shift.chat.model.Message;
 import ru.shift.chat.model.User;
@@ -74,22 +75,22 @@ public class MessageControllerTest {
 
         databaseService.enterChat(user.getUserId(), chat.getChatId());
 
-        Message messageForDelete = new Message();
-        messageForDelete.setChat(chat);
+        MessageDTO messageForDelete = new MessageDTO();
+        messageForDelete.setChatId(chat.getChatId());
         messageForDelete.setText("Odd message");
-        messageForDelete.setSendTime(LocalDateTime.now().minusSeconds(1).toString());
         messageForDelete.setLifetimeSec(1);
         messageForDelete.setUserId(user.getUserId());
+        messageForDelete.setSendTime(LocalDateTime.now().minusSeconds(1).toString());
 
-        Message neededMessage = new Message();
-        neededMessage.setSendTime(LocalDateTime.now().toString());
+        MessageDTO neededMessage = new MessageDTO();
         neededMessage.setLifetimeSec(5);
-        neededMessage.setChat(chat);
+        neededMessage.setChatId(chat.getChatId());
         neededMessage.setText("Needed message");
         neededMessage.setUserId(user.getUserId());
+        neededMessage.setSendTime(LocalDateTime.now().minusSeconds(1).toString());
 
-        databaseService.addMessage(messageForDelete, chat.getChatId());
-        databaseService.addMessage(neededMessage, chat.getChatId());
+        databaseService.addMessage(messageForDelete);
+        databaseService.addMessage(neededMessage);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/messages")
                 .param("chatId", Integer.toString(chat.getChatId()))
@@ -117,7 +118,6 @@ public class MessageControllerTest {
         map.put("chatId", Integer.toString(chat.getChatId()));
         map.put("userId", Integer.toString(user.getUserId()));
         map.put("text", "Text");
-        map.put("sendTime", LocalDateTime.now().toString());
         map.put("lifetimeSec", "2");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/message")
@@ -143,7 +143,6 @@ public class MessageControllerTest {
         map.put("chatId", "1000");
         map.put("userId", Integer.toString(user.getUserId()));
         map.put("text", "Text");
-        map.put("sendTime", LocalDateTime.now().toString());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/message")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -167,7 +166,6 @@ public class MessageControllerTest {
         map.put("chatId", Integer.toString(chat.getChatId()));
         map.put("userId", Integer.toString(user.getUserId()));
         map.put("text", "Text");
-        map.put("sendTime", LocalDateTime.now().toString());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/message")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -199,7 +197,6 @@ public class MessageControllerTest {
         map.put("chatId", Integer.toString(chat.getChatId()));
         map.put("userId", Integer.toString(owner.getUserId()));
         map.put("text", "uncheckedMessageInPrivateChat");
-        map.put("sendTime", LocalDateTime.now().toString());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/message")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -232,7 +229,6 @@ public class MessageControllerTest {
         map.put("chatId", "0");
         map.put("userId", Integer.toString(owner.getUserId()));
         map.put("text", "canCheckedMessage");
-        map.put("sendTime", LocalDateTime.now().toString());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/message")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -277,7 +273,6 @@ public class MessageControllerTest {
         map.put("chatId", "0");
         map.put("userId", Integer.toString(owner.getUserId()));
         map.put("text", "uncheckedMessageWithMultiUser");
-        map.put("sendTime", LocalDateTime.now().toString());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/message")
                 .contentType(MediaType.APPLICATION_JSON)

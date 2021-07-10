@@ -99,7 +99,6 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public Message addMessage(MessageDTO messageDTO) throws ChatNotFoundException {
-
         Message message = new Message();
         message.setText(messageDTO.getText());
         message.setUserId(messageDTO.getUserId());

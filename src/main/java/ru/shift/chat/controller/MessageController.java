@@ -35,7 +35,6 @@ public class MessageController {
             @ApiResponse(code = 404, message = "Chat or user not found")})
     @PostMapping("/message")
     private Message saveMessage(@RequestBody MessageDTO messageDTO) throws ChatNotFoundException{
-        LocalDateTime localDateTime = LocalDateTime.now();
         messageDTO.setSendTime(LocalDateTime.now().plusSeconds(messageDTO.getDelaySec()).toString());
         if(messageDTO.getLifetimeSec() == null) messageDTO.setLifetimeSec(-1);
         return databaseService.addMessage(messageDTO);
