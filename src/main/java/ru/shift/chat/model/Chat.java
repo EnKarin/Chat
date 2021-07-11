@@ -6,7 +6,9 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @Table(name = "chat")
@@ -29,6 +31,14 @@ public class Chat {
     @Column
     private String name;
 
+    @ApiModelProperty(
+            value = "Optional subscription to RSS resource",
+            name = "rssLink",
+            dataType = "String",
+            example = "https://lenta.ru/rss/news")
+    @Column
+    private String rssLink;
+
     @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
     @Fetch(value = FetchMode.SUBSELECT)
     @JsonIgnore
@@ -38,6 +48,10 @@ public class Chat {
     @Fetch(value = FetchMode.SUBSELECT)
     @JsonIgnore
     private List<Message> messages;
+
+    public Optional<String> getRssLink() {
+        return Optional.ofNullable(rssLink);
+    }
 
     public List<Message> getMessages() {
         return messages;

@@ -106,7 +106,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         message.setLifetimeSec(messageDTO.getLifetimeSec());
         message.setChat(chatRepository.findById(messageDTO.getChatId()).get());
 
-        if (messageDTO.getChatId() == 0
+        if (messageDTO.getUserId() == -1 || messageDTO.getChatId() == 0
                 || message.getChat().getConnections().stream()
                 .map(Connection::getUser)
                 .mapToInt(User::getUserId)
