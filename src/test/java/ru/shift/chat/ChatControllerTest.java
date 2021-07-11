@@ -89,4 +89,9 @@ public class ChatControllerTest {
 
         Assert.assertThrows(ConnectionNotFoundException.class, () -> databaseService.addMessage(message));
     }
+
+    @Test
+    public void rssCreateMessage(){
+
+    }
 }
