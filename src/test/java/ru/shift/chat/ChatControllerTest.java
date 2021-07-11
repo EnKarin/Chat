@@ -19,11 +19,13 @@ import ru.shift.chat.exception.ConnectionNotFoundException;
 import ru.shift.chat.model.Chat;
 import ru.shift.chat.model.User;
 import ru.shift.chat.service.DatabaseServiceImpl;
+import ru.shift.chat.service.FeedConsumer;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 @ContextConfiguration(classes = {ChatApplication.class})
@@ -42,6 +44,9 @@ public class ChatControllerTest {
 
     @Autowired
     Gson gson;
+
+    @Autowired
+    FeedConsumer feedConsumer;
 
     @Test
     public void saveChat() throws Exception {
@@ -91,7 +96,23 @@ public class ChatControllerTest {
     }
 
     @Test
-    public void rssCreateMessage(){
+    public void rssCreateMessage() throws Exception {
+        Chat chat = new Chat();
+        chat.setRssLink("https://lenta.ru/rss/news");
+        chat.setName("Test chat");
+        chat = databaseService.addChat(chat);
 
+        User user = new User();
+        user.setFirstName("User");
+        user.setLastName("U");
+        user = databaseService.addUser(user);
+
+        databaseService.enterChat(user.getUserId(), chat.getChatId());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/messages")
+                .param("chatId", Integer.toString(chat.getChatId()))
+                .param("userId", Integer.toString(user.getUserId()))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
     }
 }

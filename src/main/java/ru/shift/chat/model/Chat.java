@@ -64,6 +64,10 @@ public class Chat {
         return Optional.ofNullable(rssLink);
     }
 
+    public void setRssLink(String rssLink) {
+        this.rssLink = rssLink;
+    }
+
     public List<Message> getMessages() {
         return messages;
     }

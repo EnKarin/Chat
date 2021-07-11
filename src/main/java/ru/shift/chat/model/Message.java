@@ -32,7 +32,7 @@ public class Message {
             name = "text",
             dataType = "String",
             example = "Hello!")
-    @Column
+    @Column(length = 1500)
     private String text;
 
     @Column

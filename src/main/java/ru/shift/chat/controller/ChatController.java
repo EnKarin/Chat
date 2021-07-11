@@ -40,6 +40,12 @@ public class ChatController {
                 HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler({FeedException.class})
+    private ResponseEntity<?> feedError(){
+        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.INCOMPLETE_INPUT)),
+                HttpStatus.NOT_FOUND);
+    }
+
     @ApiOperation(value = "Create a chat with a given name", response = Chat.class)
     @PostMapping("/chat")
     private Chat createChat(@RequestBody Chat chat) throws ConnectionNotFoundException, FeedException {

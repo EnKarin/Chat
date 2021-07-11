@@ -63,10 +63,16 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public Chat addChat(Chat chat) throws ConnectionNotFoundException, FeedException {
-        if(chat.getRssLink().isPresent()) {
-            consumer.saveFirstRssMessage(chat);
+        try {
+            chat = chatRepository.save(chat);
+            if (chat.getRssLink().isPresent()) {
+                consumer.saveFirstRssMessage(chat);
+            }
+            return chat;
+        } catch (NoSuchElementException | FeedException e){
+            chatRepository.delete(chat);
+            throw e;
         }
-        return chatRepository.save(chat);
     }
 
     @Override
@@ -144,9 +150,8 @@ public class DatabaseServiceImpl implements DatabaseService {
             while(uncheckedIterator.hasNext())
                 uncheckedIterator.next().setUser(usersIterator.next());
 
-            uncheckedRepository.saveAll(uncheckeds);
-
             Message result = messageRepository.save(message);
+            uncheckedRepository.saveAll(uncheckeds);
             result.toUserView();
             return result;
         }
