@@ -6,7 +6,6 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +37,18 @@ public class Chat {
             example = "https://lenta.ru/rss/news")
     @Column
     private String rssLink;
+
+    @ApiModelProperty(hidden = true)
+    @Column
+    private int messageHashcode;
+
+    public int getMessageHashcode() {
+        return messageHashcode;
+    }
+
+    public void setMessageHashcode(int messageHashcode) {
+        this.messageHashcode = messageHashcode;
+    }
 
     @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
     @Fetch(value = FetchMode.SUBSELECT)

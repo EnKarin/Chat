@@ -1,6 +1,7 @@
 package ru.shift.chat.controller;
 
 import com.google.gson.Gson;
+import com.rometools.rome.io.FeedException;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import ru.shift.chat.DTO.ErrorDTO;
 import ru.shift.chat.DTO.MessageDTO;
 import ru.shift.chat.enums.ErrorCode;
 import ru.shift.chat.enums.TagsConstant;
+import ru.shift.chat.exception.ConnectionNotFoundException;
 import ru.shift.chat.model.Chat;
 import ru.shift.chat.service.DatabaseService;
 
@@ -40,7 +42,7 @@ public class ChatController {
 
     @ApiOperation(value = "Create a chat with a given name", response = Chat.class)
     @PostMapping("/chat")
-    private Chat createChat(@RequestBody Chat chat){
+    private Chat createChat(@RequestBody Chat chat) throws ConnectionNotFoundException, FeedException {
         return databaseService.addChat(chat);
     }
 
