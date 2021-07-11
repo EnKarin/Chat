@@ -479,4 +479,36 @@ public class MessageControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(0)));
     }
+
+    @Test
+    public void superuserAddMessage() throws Exception {
+        Chat chat = new Chat();
+        chat.setName("superuserAddMessage chat");
+        chat = databaseService.addChat(chat);
+
+        User first = new User();
+        first.setLastName("First");
+        first.setLastName("F");
+        first = databaseService.addUser(first);
+
+        databaseService.enterChat(first.getUserId(), chat.getChatId());
+
+        MessageDTO messageDTO = new MessageDTO();
+        messageDTO.setSendTime(LocalDateTime.now().toString());
+        messageDTO.setChatId(chat.getChatId());
+        messageDTO.setText("superuserAddMessage");
+        messageDTO.setLifetimeSec(-1);
+        messageDTO.setUserId(-1);
+
+        databaseService.addMessage(messageDTO);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/messages")
+                .param("chatId", Integer.toString(chat.getChatId()))
+                .param("userId", Integer.toString(first.getUserId()))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].text",
+                        is("superuserAddMessage")));
+    }
 }
