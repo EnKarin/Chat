@@ -1,5 +1,6 @@
 package ru.shift.chat.service;
 
+import com.rometools.rome.io.FeedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.shift.chat.DTO.MessageDTO;
@@ -33,6 +34,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     @Autowired
     UncheckedRepository uncheckedRepository;
 
+    @Autowired
+    FeedConsumer consumer;
+
     @Override
     public User addUser(final User user) {
         return userRepository.save(user);
@@ -58,13 +62,24 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public Chat addChat(Chat chat) {
+    public Chat addChat(Chat chat) throws ConnectionNotFoundException, FeedException {
+        if(chat.getRssLink().isPresent()) {
+            consumer.saveFirstRssMessage(chat);
+        }
         return chatRepository.save(chat);
     }
 
     @Override
     public List<Chat> getAllChat() {
         return (List<Chat>) chatRepository.findAll();
+    }
+
+    public void saveAllChat(List<Chat> chats){
+        chatRepository.saveAll(chats);
+    }
+
+    public void saveExistChat(Chat chat){
+        chatRepository.save(chat);
     }
 
     @Override

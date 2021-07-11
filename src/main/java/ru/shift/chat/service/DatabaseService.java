@@ -1,5 +1,6 @@
 package ru.shift.chat.service;
 
+import com.rometools.rome.io.FeedException;
 import ru.shift.chat.DTO.MessageDTO;
 import ru.shift.chat.exception.ConnectionNotFoundException;
 import ru.shift.chat.model.Chat;
@@ -18,9 +19,13 @@ public interface DatabaseService {
 
     User updateUser(int userId, User user);
 
-    Chat addChat(Chat chat);
+    Chat addChat(Chat chat) throws ConnectionNotFoundException, FeedException;
 
     List<Chat> getAllChat();
+
+    void saveAllChat(List<Chat> chats);
+
+    void saveExistChat(Chat chat);
 
     void enterChat(int userId, int chatId);
 
