@@ -111,7 +111,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .map(Connection::getUser)
                 .mapToInt(User::getUserId)
                 .anyMatch(id -> message.getUserId() == id)) {
-            List<User> usersId = chatRepository.findById(messageDTO.getChatId()).get().getConnections()
+            List<User> usersId = message.getChat().getConnections()
                     .stream()
                     .map(Connection::getUser)
                     .filter(user -> user.getUserId() != message.getUserId())
