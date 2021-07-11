@@ -68,7 +68,10 @@ public class MessageController {
             response = List.class, tags = "getMessages")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success|OK"),
-            @ApiResponse(code = 404, message = "Chat or user not found")})
+            @ApiResponse(code = 403, message = "No chat access"),
+            @ApiResponse(code = 404, message = "Chat or user not found"),
+            @ApiResponse(code = 500, message = "Unknown server error")
+    })
     @GetMapping("/messages")
     private List<Message> getMessages(@RequestParam Integer userId,
                                       @RequestParam(required = false, defaultValue = "0") Integer chatId){
@@ -79,7 +82,10 @@ public class MessageController {
             response = List.class, tags = "getMessages")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success|OK"),
-            @ApiResponse(code = 404, message = "Chat or user not found")})
+            @ApiResponse(code = 403, message = "No chat access"),
+            @ApiResponse(code = 404, message = "Chat or user not found"),
+            @ApiResponse(code = 500, message = "Unknown server error")
+    })
     @GetMapping("/messages/unread")
     private List<Message> getUnreadMessages(@RequestParam Integer userId,
                                            @RequestParam(required = false, defaultValue = "0") Integer chatId){

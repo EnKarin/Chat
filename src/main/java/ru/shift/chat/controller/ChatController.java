@@ -64,7 +64,8 @@ public class ChatController {
     @ApiOperation("Disconnect a user from this chat")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success|OK"),
-            @ApiResponse(code = 404, message = "The user is not in the chat or the chat does not exist")
+            @ApiResponse(code = 404, message = "The user is not in the chat or the chat does not exist"),
+            @ApiResponse(code = 500, message = "Unknown server error")
     })
     @PostMapping("/chat/leave")
     private void quitChat(@RequestBody MessageDTO messageDTO) throws NoSuchElementException{
