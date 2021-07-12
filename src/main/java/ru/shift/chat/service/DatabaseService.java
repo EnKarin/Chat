@@ -33,7 +33,7 @@ public interface DatabaseService {
 
     Message addMessage(MessageDTO messageDTO) throws ConnectionNotFoundException;
 
-    List<Message> getAllMessage(int chatId, int userId);
+    List<Message> getAllMessage(int chatId, int userId) throws ConnectionNotFoundException;
 
-    List<Message> getAllUnreadMessages(int chatId, int userId);
+    List<Message> getAllUnreadMessages(int chatId, int userId) throws ConnectionNotFoundException;
 }

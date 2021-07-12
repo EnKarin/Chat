@@ -36,7 +36,7 @@ public class ScheduledConfiguration {
         messageRepository.deleteAllById(list);
     }
 
-    @Scheduled(fixedDelay = 600000)
+    @Scheduled(fixedDelay = 60000)
     private void postRssNews(){
         feedConsumer.saveRssMessage();
     }

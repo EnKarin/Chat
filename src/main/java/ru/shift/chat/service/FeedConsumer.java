@@ -69,7 +69,8 @@ public class FeedConsumer {
                         chat.setLastMessageDateTime(date);
                         break;
                     }
-                    databaseService.addMessage(messageDTO);
+                    if(!mess.isEmpty())
+                        databaseService.addMessage(messageDTO);
                 }
             } catch (FeedException | ConnectionNotFoundException e) {
                 e.printStackTrace();

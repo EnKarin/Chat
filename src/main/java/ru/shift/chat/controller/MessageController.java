@@ -77,7 +77,7 @@ public class MessageController {
     })
     @GetMapping("/messages")
     private List<Message> getMessages(@RequestParam Integer userId,
-                                      @RequestParam(required = false, defaultValue = "0") Integer chatId){
+                                      @RequestParam(required = false, defaultValue = "0") Integer chatId) throws ConnectionNotFoundException {
         return databaseService.getAllMessage(chatId, userId).stream().peek(Message::toUserView).collect(Collectors.toList());
     }
 
@@ -91,7 +91,7 @@ public class MessageController {
     })
     @GetMapping("/messages/unread")
     private List<Message> getUnreadMessages(@RequestParam Integer userId,
-                                           @RequestParam(required = false, defaultValue = "0") Integer chatId){
+                                           @RequestParam(required = false, defaultValue = "0") Integer chatId) throws ConnectionNotFoundException {
         return databaseService.getAllUnreadMessages(chatId, userId).stream().peek(Message::toUserView).collect(Collectors.toList());
     }
 }

@@ -161,42 +161,58 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public List<Message> getAllMessage(int chatId, int userId) {
-        List<Unchecked> unchecked = userRepository.findById(userId).get().getUnchecked().parallelStream()
-                .filter(uncheck -> uncheck.getChatId() == chatId)
-                .collect(Collectors.toList());
+    public List<Message> getAllMessage(int chatId, int userId) throws ConnectionNotFoundException {
+        if(chatId == 0 || chatRepository.findById(chatId).get().getConnections().stream()
+                .map(Connection::getUser)
+                .mapToInt(User::getUserId)
+                .anyMatch(id -> userId == id)){
+            List<Unchecked> unchecked = userRepository.findById(userId).get().getUnchecked().parallelStream()
+                    .filter(uncheck -> uncheck.getChatId() == chatId)
+                    .filter(uncheck -> LocalDateTime.parse(uncheck.getMessage().getSendTime())
+                            .isBefore(LocalDateTime.now()))
+                    .collect(Collectors.toList());
 
-        uncheckedRepository.deleteAll(unchecked);
+            uncheckedRepository.deleteAll(unchecked);
 
-        return chatRepository.findById(chatId).get().getMessages().stream()
-                .filter(message -> message.getLifetimeSec() == -1
-                        || (LocalDateTime
-                        .parse(message.getSendTime())
-                        .plusSeconds(message.getLifetimeSec())
-                        .isAfter(LocalDateTime.now())))
-                .filter(message -> LocalDateTime.parse(message.getSendTime())
-                        .isBefore(LocalDateTime.now()))
-                .sorted(Comparator.comparing(Message::getSendTime).reversed())
-                .collect(Collectors.toList());
+            return chatRepository.findById(chatId).get().getMessages().stream()
+                    .filter(message -> message.getLifetimeSec() == -1
+                            || (LocalDateTime
+                            .parse(message.getSendTime())
+                            .plusSeconds(message.getLifetimeSec())
+                            .isAfter(LocalDateTime.now())))
+                    .filter(message -> LocalDateTime.parse(message.getSendTime())
+                            .isBefore(LocalDateTime.now()))
+                    .sorted(Comparator.comparing(Message::getSendTime).reversed())
+                    .collect(Collectors.toList());
+        }
+        throw new ConnectionNotFoundException();
     }
 
     @Override
-    public List<Message> getAllUnreadMessages(int chatId, int userId){
-        List<Unchecked> uncheckeds = userRepository.findById(userId).get().getUnchecked()
-                .parallelStream()
-                .filter(uncheck -> uncheck.getChatId() == chatId)
-                .filter(unchecked -> unchecked.getMessage().getLifetimeSec() == -1
-                        || (LocalDateTime
-                        .parse(unchecked.getMessage().getSendTime())
-                        .plusSeconds(unchecked.getMessage().getLifetimeSec())
-                        .isAfter(LocalDateTime.now())))
-                .filter(unchecked -> LocalDateTime.parse(unchecked.getMessage().getSendTime())
-                        .isBefore(LocalDateTime.now()))
-                .collect(Collectors.toList());
-        uncheckedRepository.deleteAll(uncheckeds);
-        return uncheckeds.parallelStream()
-                .map(Unchecked::getMessage)
-                .sorted(Comparator.comparing(Message::getSendTime).reversed())
-                .collect(Collectors.toList());
+    public List<Message> getAllUnreadMessages(int chatId, int userId) throws ConnectionNotFoundException {
+        if(chatId == 0 || chatRepository.findById(chatId).get().getConnections().stream()
+                .map(Connection::getUser)
+                .mapToInt(User::getUserId)
+                .anyMatch(id -> userId == id)) {
+            List<Unchecked> unchecks = userRepository.findById(userId).get().getUnchecked()
+                    .parallelStream()
+                    .filter(uncheck -> uncheck.getChatId() == chatId)
+                    .filter(unchecked -> LocalDateTime.parse(unchecked.getMessage().getSendTime())
+                            .isBefore(LocalDateTime.now()))
+                    .collect(Collectors.toList());
+
+            uncheckedRepository.deleteAll(unchecks);
+
+            return unchecks.parallelStream()
+                    .filter(unchecked -> unchecked.getMessage().getLifetimeSec() == -1
+                            || (LocalDateTime
+                            .parse(unchecked.getMessage().getSendTime())
+                            .plusSeconds(unchecked.getMessage().getLifetimeSec())
+                            .isAfter(LocalDateTime.now())))
+                    .map(Unchecked::getMessage)
+                    .sorted(Comparator.comparing(Message::getSendTime).reversed())
+                    .collect(Collectors.toList());
+        }
+        throw new ConnectionNotFoundException();
     }
 }
