@@ -6,6 +6,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,15 +41,7 @@ public class Chat {
 
     @ApiModelProperty(hidden = true)
     @Column
-    private int messageHashcode;
-
-    public int getMessageHashcode() {
-        return messageHashcode;
-    }
-
-    public void setMessageHashcode(int messageHashcode) {
-        this.messageHashcode = messageHashcode;
-    }
+    private Date lastMessageDateTime;
 
     @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
     @Fetch(value = FetchMode.SUBSELECT)
@@ -66,6 +59,14 @@ public class Chat {
 
     public void setRssLink(String rssLink) {
         this.rssLink = rssLink;
+    }
+
+    public Date getLastMessageDateTime() {
+        return lastMessageDateTime;
+    }
+
+    public void setLastMessageDateTime(Date lastMessageDateTime) {
+        this.lastMessageDateTime = lastMessageDateTime;
     }
 
     public List<Message> getMessages() {

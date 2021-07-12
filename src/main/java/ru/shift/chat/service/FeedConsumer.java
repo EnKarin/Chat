@@ -3,6 +3,9 @@ package ru.shift.chat.service;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,15 +29,16 @@ public class FeedConsumer {
     DatabaseService databaseService;
 
     public void saveFirstRssMessage(Chat chat) throws FeedException, ConnectionNotFoundException {
+        SyndEntry syndEntry = (rssReader(chat.getRssLink().get())).get(0);
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setChatId(chat.getChatId());
         messageDTO.setUserId(-1);
         messageDTO.setLifetimeSec(-1);
-        messageDTO.setText((rssReader(chat.getRssLink().get())).get(0).getDescription().getValue());
+        messageDTO.setText(syndEntry.getDescription().getValue().trim());
         messageDTO.setSendTime(LocalDateTime.now().toString());
         databaseService.addMessage(messageDTO);
 
-        chat.setMessageHashcode(messageDTO.getText().hashCode());
+        chat.setLastMessageDateTime(syndEntry.getPublishedDate());
 
         databaseService.saveExistChat(chat);
     }
@@ -57,13 +61,14 @@ public class FeedConsumer {
             messageDTO.setChatId(chat.getChatId());
             try {
                 List<SyndEntry> rssNews = rssReader(chat.getRssLink().get());
+                Date date = rssNews.get(0).getPublishedDate();
                 for(SyndEntry entry : rssNews){
-                    String mess = entry.getDescription().getValue();
-                    if(mess.hashCode() == chat.getMessageHashcode()) {
-                        chat.setMessageHashcode(messageDTO.getText().hashCode());
+                    String mess = entry.getDescription().getValue().trim();
+                    messageDTO.setText(mess);
+                    if(!entry.getPublishedDate().after(chat.getLastMessageDateTime())) {
+                        chat.setLastMessageDateTime(date);
                         break;
                     }
-                    messageDTO.setText(mess);
                     databaseService.addMessage(messageDTO);
                 }
             } catch (FeedException | ConnectionNotFoundException e) {

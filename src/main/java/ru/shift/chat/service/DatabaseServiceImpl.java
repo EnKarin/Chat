@@ -132,27 +132,29 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .map(Connection::getUser)
                 .mapToInt(User::getUserId)
                 .anyMatch(id -> message.getUserId() == id)) {
-            List<User> usersId = message.getChat().getConnections()
-                    .stream()
-                    .map(Connection::getUser)
-                    .filter(user -> user.getUserId() != message.getUserId())
-                    .collect(Collectors.toList());
+            List<Unchecked> uncheckeds = List.of();
+            if(message.getChat().getConnections() != null) {
+                List<User> usersId = message.getChat().getConnections()
+                        .stream()
+                        .map(Connection::getUser)
+                        .filter(user -> user.getUserId() != message.getUserId())
+                        .collect(Collectors.toList());
 
-            List<Unchecked> uncheckeds = Stream.generate(Unchecked::new)
-                    .limit(usersId.size())
-                    .peek(unchecked -> unchecked.setMessage(message))
-                    .peek(unchecked -> unchecked.setChatId(messageDTO.getChatId()))
-                    .collect(Collectors.toList());
+                uncheckeds = Stream.generate(Unchecked::new)
+                        .limit(usersId.size())
+                        .peek(unchecked -> unchecked.setMessage(message))
+                        .peek(unchecked -> unchecked.setChatId(messageDTO.getChatId()))
+                        .collect(Collectors.toList());
 
-            Iterator<Unchecked> uncheckedIterator = uncheckeds.iterator();
-            Iterator<User> usersIterator = usersId.iterator();
+                Iterator<Unchecked> uncheckedIterator = uncheckeds.iterator();
+                Iterator<User> usersIterator = usersId.iterator();
 
-            while(uncheckedIterator.hasNext())
-                uncheckedIterator.next().setUser(usersIterator.next());
+                while (uncheckedIterator.hasNext())
+                    uncheckedIterator.next().setUser(usersIterator.next());
+            }
 
             Message result = messageRepository.save(message);
             uncheckedRepository.saveAll(uncheckeds);
-            result.toUserView();
             return result;
         }
         throw new ConnectionNotFoundException();
@@ -175,7 +177,6 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .filter(message -> LocalDateTime.parse(message.getSendTime())
                         .isBefore(LocalDateTime.now()))
                 .sorted(Comparator.comparing(Message::getSendTime).reversed())
-                .peek(Message::toUserView)
                 .collect(Collectors.toList());
     }
 
@@ -196,7 +197,6 @@ public class DatabaseServiceImpl implements DatabaseService {
         return uncheckeds.parallelStream()
                 .map(Unchecked::getMessage)
                 .sorted(Comparator.comparing(Message::getSendTime).reversed())
-                .peek(Message::toUserView)
                 .collect(Collectors.toList());
     }
 }

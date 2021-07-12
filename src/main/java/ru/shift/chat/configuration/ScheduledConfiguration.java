@@ -24,7 +24,7 @@ public class ScheduledConfiguration {
 
     @Scheduled(fixedDelay = 10000)
     private void scheduledDatabaseUpdate(){
-        List<Integer> list = ((List< Message>)messageRepository.findAll())
+        List<Integer> list = ((List<Message>)messageRepository.findAll())
                 .stream()
                 .filter(message -> LocalDateTime
                         .parse(message.getSendTime())

@@ -20,6 +20,7 @@ import ru.shift.chat.service.DatabaseService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Api(tags = {TagsConstant.MESSAGE_TAG})
 @RestController
@@ -61,7 +62,9 @@ public class MessageController {
     private Message saveMessage(@RequestBody MessageDTO messageDTO) throws ConnectionNotFoundException {
         messageDTO.setSendTime(LocalDateTime.now().plusSeconds(messageDTO.getDelaySec()).toString());
         if(messageDTO.getLifetimeSec() == null) messageDTO.setLifetimeSec(-1);
-        return databaseService.addMessage(messageDTO);
+        Message message = databaseService.addMessage(messageDTO);
+        message.toUserView();
+        return message;
     }
 
     @ApiOperation(value = "Retrieve all messages from a private chat. If the chat is not specified, then from the general",
@@ -75,7 +78,7 @@ public class MessageController {
     @GetMapping("/messages")
     private List<Message> getMessages(@RequestParam Integer userId,
                                       @RequestParam(required = false, defaultValue = "0") Integer chatId){
-        return databaseService.getAllMessage(chatId, userId);
+        return databaseService.getAllMessage(chatId, userId).stream().peek(Message::toUserView).collect(Collectors.toList());
     }
 
     @ApiOperation(value = "Returns unread messages for the given user in the specified chat",
@@ -89,6 +92,6 @@ public class MessageController {
     @GetMapping("/messages/unread")
     private List<Message> getUnreadMessages(@RequestParam Integer userId,
                                            @RequestParam(required = false, defaultValue = "0") Integer chatId){
-        return databaseService.getAllUnreadMessages(chatId, userId);
+        return databaseService.getAllUnreadMessages(chatId, userId).stream().peek(Message::toUserView).collect(Collectors.toList());
     }
 }
