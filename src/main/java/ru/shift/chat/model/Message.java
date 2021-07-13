@@ -56,6 +56,17 @@ public class Message {
     @JsonIgnore
     private List<Unchecked> unchecked;
 
+    @Column
+    private String attach;
+
+    public String getAttach() {
+        return attach;
+    }
+
+    public void setAttach(String attach) {
+        this.attach = attach;
+    }
+
     public void setChat(Chat chat) {
         this.chat = chat;
     }

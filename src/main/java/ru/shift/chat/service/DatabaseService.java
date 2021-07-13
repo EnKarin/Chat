@@ -1,12 +1,16 @@
 package ru.shift.chat.service;
 
 import com.rometools.rome.io.FeedException;
+import ru.shift.chat.DTO.AttachDTO;
 import ru.shift.chat.DTO.MessageDTO;
 import ru.shift.chat.exception.ConnectionNotFoundException;
+import ru.shift.chat.model.Attach;
 import ru.shift.chat.model.Chat;
 import ru.shift.chat.model.Message;
 import ru.shift.chat.model.User;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 public interface DatabaseService {
@@ -33,7 +37,11 @@ public interface DatabaseService {
 
     Message addMessage(MessageDTO messageDTO) throws ConnectionNotFoundException;
 
+    String addMessage(AttachDTO attachDTO) throws ConnectionNotFoundException, IOException;
+
     List<Message> getAllMessage(int chatId, int userId) throws ConnectionNotFoundException;
 
     List<Message> getAllUnreadMessages(int chatId, int userId) throws ConnectionNotFoundException;
+
+    Attach getAttach(String name);
 }

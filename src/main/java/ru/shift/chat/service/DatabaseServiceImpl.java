@@ -3,11 +3,17 @@ package ru.shift.chat.service;
 import com.rometools.rome.io.FeedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
+import ru.shift.chat.DTO.AttachDTO;
 import ru.shift.chat.DTO.MessageDTO;
 import ru.shift.chat.exception.ConnectionNotFoundException;
 import ru.shift.chat.model.*;
 import ru.shift.chat.repository.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URLConnection;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -33,6 +39,9 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Autowired
     UncheckedRepository uncheckedRepository;
+
+    @Autowired
+    AttachRepository attachRepository;
 
     @Autowired
     FeedConsumer consumer;
@@ -69,7 +78,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 consumer.saveFirstRssMessage(chat);
             }
             return chat;
-        } catch (NoSuchElementException | FeedException e){
+        } catch (NoSuchElementException | FeedException e) {
             chatRepository.delete(chat);
             throw e;
         }
@@ -80,11 +89,11 @@ public class DatabaseServiceImpl implements DatabaseService {
         return (List<Chat>) chatRepository.findAll();
     }
 
-    public void saveAllChat(List<Chat> chats){
+    public void saveAllChat(List<Chat> chats) {
         chatRepository.saveAll(chats);
     }
 
-    public void saveExistChat(Chat chat){
+    public void saveExistChat(Chat chat) {
         chatRepository.save(chat);
     }
 
@@ -106,7 +115,7 @@ public class DatabaseServiceImpl implements DatabaseService {
             Iterator<Unchecked> uncheckedIterator = uncheckeds.iterator();
             Iterator<Message> messagesIterator = messages.iterator();
 
-            while(uncheckedIterator.hasNext())
+            while (uncheckedIterator.hasNext())
                 uncheckedIterator.next().setMessage(messagesIterator.next());
 
             uncheckedRepository.saveAll(uncheckeds);
@@ -127,31 +136,16 @@ public class DatabaseServiceImpl implements DatabaseService {
         message.setLifetimeSec(messageDTO.getLifetimeSec());
         message.setChat(chatRepository.findById(messageDTO.getChatId()).get());
 
-        if (messageDTO.getUserId() == -1 || hasConnection(message.getChat(), messageDTO.getUserId())) {
-            List<Unchecked> uncheckeds = List.of();
-            if(message.getChat().getConnections() != null) {
-                List<User> usersId = message.getChat().getConnections()
-                        .stream()
-                        .map(Connection::getUser)
-                        .filter(user -> user.getUserId() != message.getUserId())
-                        .collect(Collectors.toList());
-
-                uncheckeds = Stream.generate(Unchecked::new)
-                        .limit(usersId.size())
-                        .peek(unchecked -> unchecked.setChatId(messageDTO.getChatId()))
-                        .collect(Collectors.toList());
-
-                Iterator<Unchecked> uncheckedIterator = uncheckeds.iterator();
-                Iterator<User> usersIterator = usersId.iterator();
-
-                while (uncheckedIterator.hasNext())
-                    uncheckedIterator.next().setUser(usersIterator.next());
+        if (messageDTO.getUserId() == -1 || hasConnection(message.getChat(), message.getUserId())) {
+            List<Unchecked> unchecks = List.of();
+            if (message.getChat().getConnections() != null) { // false только в случае, если в чате нет пользователей
+                unchecks = createUncheckedForMessage(message);
             }
 
             Message result = messageRepository.save(message);
-            if(!uncheckeds.isEmpty()) {
-                uncheckeds.forEach(unchecked -> unchecked.setMessage(result));
-                uncheckedRepository.saveAll(uncheckeds);
+            if (!unchecks.isEmpty()) {
+                unchecks.forEach(unchecked -> unchecked.setMessage(result));
+                uncheckedRepository.saveAll(unchecks);
             }
             return result;
         }
@@ -159,9 +153,34 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
+    public String addMessage(AttachDTO attachDTO) throws ConnectionNotFoundException, IOException {
+        Message message = new Message();
+        message.setUserId(attachDTO.getUserId());
+        message.setSendTime(LocalDateTime.now().toString());
+        message.setLifetimeSec(-1);
+        message.setChat(chatRepository.findById(attachDTO.getChatId()).get());
+
+        if (hasConnection(message.getChat(), message.getUserId())) {
+            Attach attach = new Attach();
+            attach.setData(attachDTO.getFile());
+            String name = attachDTO.getFile().getOriginalFilename();
+            attach.setExpansion(name.substring(name.indexOf('.')));
+            attach = attachRepository.save(attach);
+
+            message.setAttach(attach.getName() + attach.getExpansion());
+            List<Unchecked> unchecks = createUncheckedForMessage(message);
+            Message result = messageRepository.save(message);
+            unchecks.forEach(unchecked -> unchecked.setMessage(result));
+            uncheckedRepository.saveAll(unchecks);
+            return attach.getName() + attach.getExpansion();
+        }
+        throw new ConnectionNotFoundException();
+    }
+
+    @Override
     public List<Message> getAllMessage(int chatId, int userId) throws ConnectionNotFoundException {
         Chat chat = chatRepository.findById(chatId).get();
-        if(hasConnection(chat, userId)){
+        if (hasConnection(chat, userId)) {
             userCheckMessage(chatId, userId);
 
             return chat.getMessages().stream()
@@ -180,7 +199,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public List<Message> getAllUnreadMessages(int chatId, int userId) throws ConnectionNotFoundException {
-        if(hasConnection(chatRepository.findById(chatId).get(), userId)) {
+        if (hasConnection(chatRepository.findById(chatId).get(), userId)) {
             List<Unchecked> unchecks = userCheckMessage(chatId, userId);
 
             return unchecks.parallelStream()
@@ -196,14 +215,19 @@ public class DatabaseServiceImpl implements DatabaseService {
         throw new ConnectionNotFoundException();
     }
 
-    private boolean hasConnection(Chat chat, int userId){
+    @Override
+    public Attach getAttach(String name) {
+        return attachRepository.findById(name).get();
+    }
+
+    private boolean hasConnection(Chat chat, int userId) {
         return chat.getChatId() == 0 || chat.getConnections().stream()
                 .map(Connection::getUser)
                 .mapToInt(User::getUserId)
                 .anyMatch(id -> userId == id);
     }
 
-    private List<Unchecked> userCheckMessage(int chatId, int userId){
+    private List<Unchecked> userCheckMessage(int chatId, int userId) {
         List<Unchecked> unchecked = userRepository.findById(userId).get().getUnchecked().parallelStream()
                 .filter(uncheck -> uncheck.getChatId() == chatId)
                 .filter(uncheck -> LocalDateTime.parse(uncheck.getMessage().getSendTime())
@@ -212,5 +236,26 @@ public class DatabaseServiceImpl implements DatabaseService {
 
         uncheckedRepository.deleteAll(unchecked);
         return unchecked;
+    }
+
+    private List<Unchecked> createUncheckedForMessage(Message message) {
+        List<User> users = message.getChat().getConnections()
+                .stream()
+                .map(Connection::getUser)
+                .filter(user -> user.getUserId() != message.getUserId())
+                .collect(Collectors.toList());
+
+        List<Unchecked> result = Stream.generate(Unchecked::new)
+                .limit(users.size())
+                .peek(unchecked -> unchecked.setChatId(message.getChat().getChatId()))
+                .collect(Collectors.toList());
+
+        Iterator<Unchecked> uncheckedIterator = result.iterator();
+        Iterator<User> usersIterator = users.iterator();
+
+        while (uncheckedIterator.hasNext())
+            uncheckedIterator.next().setUser(usersIterator.next());
+
+        return result;
     }
 }
