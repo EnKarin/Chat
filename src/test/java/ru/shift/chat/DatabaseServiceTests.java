@@ -21,7 +21,7 @@ import java.util.Optional;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
-public class ChatApplicationTests {
+public class DatabaseServiceTests {
 	@InjectMocks
 	DatabaseServiceImpl databaseService;
 
