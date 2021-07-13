@@ -127,11 +127,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         message.setLifetimeSec(messageDTO.getLifetimeSec());
         message.setChat(chatRepository.findById(messageDTO.getChatId()).get());
 
-        if (messageDTO.getUserId() == -1 || messageDTO.getChatId() == 0
-                || message.getChat().getConnections().stream()
-                .map(Connection::getUser)
-                .mapToInt(User::getUserId)
-                .anyMatch(id -> message.getUserId() == id)) {
+        if (messageDTO.getUserId() == -1 || hasConnection(message.getChat(), messageDTO.getUserId())) {
             List<Unchecked> uncheckeds = List.of();
             if(message.getChat().getConnections() != null) {
                 List<User> usersId = message.getChat().getConnections()
@@ -142,7 +138,6 @@ public class DatabaseServiceImpl implements DatabaseService {
 
                 uncheckeds = Stream.generate(Unchecked::new)
                         .limit(usersId.size())
-                        .peek(unchecked -> unchecked.setMessage(message))
                         .peek(unchecked -> unchecked.setChatId(messageDTO.getChatId()))
                         .collect(Collectors.toList());
 
@@ -154,7 +149,10 @@ public class DatabaseServiceImpl implements DatabaseService {
             }
 
             Message result = messageRepository.save(message);
-            uncheckedRepository.saveAll(uncheckeds);
+            if(!uncheckeds.isEmpty()) {
+                uncheckeds.forEach(unchecked -> unchecked.setMessage(result));
+                uncheckedRepository.saveAll(uncheckeds);
+            }
             return result;
         }
         throw new ConnectionNotFoundException();
@@ -162,19 +160,11 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public List<Message> getAllMessage(int chatId, int userId) throws ConnectionNotFoundException {
-        if(chatId == 0 || chatRepository.findById(chatId).get().getConnections().stream()
-                .map(Connection::getUser)
-                .mapToInt(User::getUserId)
-                .anyMatch(id -> userId == id)){
-            List<Unchecked> unchecked = userRepository.findById(userId).get().getUnchecked().parallelStream()
-                    .filter(uncheck -> uncheck.getChatId() == chatId)
-                    .filter(uncheck -> LocalDateTime.parse(uncheck.getMessage().getSendTime())
-                            .isBefore(LocalDateTime.now()))
-                    .collect(Collectors.toList());
+        Chat chat = chatRepository.findById(chatId).get();
+        if(hasConnection(chat, userId)){
+            userCheckMessage(chatId, userId);
 
-            uncheckedRepository.deleteAll(unchecked);
-
-            return chatRepository.findById(chatId).get().getMessages().stream()
+            return chat.getMessages().stream()
                     .filter(message -> message.getLifetimeSec() == -1
                             || (LocalDateTime
                             .parse(message.getSendTime())
@@ -190,18 +180,8 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public List<Message> getAllUnreadMessages(int chatId, int userId) throws ConnectionNotFoundException {
-        if(chatId == 0 || chatRepository.findById(chatId).get().getConnections().stream()
-                .map(Connection::getUser)
-                .mapToInt(User::getUserId)
-                .anyMatch(id -> userId == id)) {
-            List<Unchecked> unchecks = userRepository.findById(userId).get().getUnchecked()
-                    .parallelStream()
-                    .filter(uncheck -> uncheck.getChatId() == chatId)
-                    .filter(unchecked -> LocalDateTime.parse(unchecked.getMessage().getSendTime())
-                            .isBefore(LocalDateTime.now()))
-                    .collect(Collectors.toList());
-
-            uncheckedRepository.deleteAll(unchecks);
+        if(hasConnection(chatRepository.findById(chatId).get(), userId)) {
+            List<Unchecked> unchecks = userCheckMessage(chatId, userId);
 
             return unchecks.parallelStream()
                     .filter(unchecked -> unchecked.getMessage().getLifetimeSec() == -1
@@ -214,5 +194,23 @@ public class DatabaseServiceImpl implements DatabaseService {
                     .collect(Collectors.toList());
         }
         throw new ConnectionNotFoundException();
+    }
+
+    private boolean hasConnection(Chat chat, int userId){
+        return chat.getChatId() == 0 || chat.getConnections().stream()
+                .map(Connection::getUser)
+                .mapToInt(User::getUserId)
+                .anyMatch(id -> userId == id);
+    }
+
+    private List<Unchecked> userCheckMessage(int chatId, int userId){
+        List<Unchecked> unchecked = userRepository.findById(userId).get().getUnchecked().parallelStream()
+                .filter(uncheck -> uncheck.getChatId() == chatId)
+                .filter(uncheck -> LocalDateTime.parse(uncheck.getMessage().getSendTime())
+                        .isBefore(LocalDateTime.now()))
+                .collect(Collectors.toList());
+
+        uncheckedRepository.deleteAll(unchecked);
+        return unchecked;
     }
 }
