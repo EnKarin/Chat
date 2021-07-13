@@ -23,7 +23,8 @@ public class SwaggerConfiguration implements WebMvcConfigurer {
                 .build()
                 .tags(new Tag(TagsConstant.MESSAGE_TAG, "REST APIs related to Message Model"))
                 .tags(new Tag(TagsConstant.USER_TAG, "REST APIs related to User Model"))
-                .tags(new Tag(TagsConstant.CHAT_TAG, "REST APIs related to Chat Model"));
+                .tags(new Tag(TagsConstant.CHAT_TAG, "REST APIs related to Chat Model"))
+                .tags(new Tag(TagsConstant.ATTACH_TAG, "REST APIs related to Attach Model"));
     }
 
     @Override
