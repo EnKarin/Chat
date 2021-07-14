@@ -10,6 +10,7 @@ import ru.shift.chat.model.Message;
 import ru.shift.chat.model.User;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -26,6 +27,8 @@ public interface DatabaseService {
     Chat addChat(Chat chat) throws ConnectionNotFoundException, FeedException;
 
     List<Chat> getAllChat();
+
+    String addMessageAttachURL(AttachDTO attachDTO, byte[] file) throws ConnectionNotFoundException;
 
     void saveAllChat(List<Chat> chats);
 

@@ -1,16 +1,6 @@
 package ru.shift.chat.service;
 
-import java.io.IOException;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.rometools.rome.feed.synd.SyndEnclosure;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
@@ -18,15 +8,27 @@ import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.shift.chat.DTO.AttachDTO;
 import ru.shift.chat.DTO.MessageDTO;
 import ru.shift.chat.exception.ConnectionNotFoundException;
 import ru.shift.chat.model.Chat;
+
+import java.io.IOException;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class FeedConsumer {
 
     @Autowired
     DatabaseService databaseService;
+
+    @Autowired
+    AttachService attachService;
 
     public void saveFirstRssMessage(Chat chat) throws FeedException, ConnectionNotFoundException {
         SyndEntry syndEntry = (rssReader(chat.getRssLink().get())).get(0);
@@ -38,6 +40,20 @@ public class FeedConsumer {
         messageDTO.setSendTime(LocalDateTime.now().toString());
         databaseService.addMessage(messageDTO);
 
+        AttachDTO attachDTO = new AttachDTO();
+        attachDTO.setChatId(chat.getChatId());
+        attachDTO.setUserId(-1);
+        List<SyndEnclosure> enclosures = syndEntry.getEnclosures();
+                enclosures.forEach( e -> {
+                attachDTO.setUrl(e.getUrl());
+                    try {
+                        attachService.saveURLAttach(attachDTO);
+                    } catch (IOException | ConnectionNotFoundException ioException) {
+                        ioException.printStackTrace();
+                    }
+                });
+
+        //
         chat.setLastMessageDateTime(syndEntry.getPublishedDate());
 
         databaseService.saveExistChat(chat);
@@ -61,17 +77,17 @@ public class FeedConsumer {
             messageDTO.setChatId(chat.getChatId());
             try {
                 List<SyndEntry> rssNews = rssReader(chat.getRssLink().get());
-                Date date = rssNews.get(0).getPublishedDate();
                 for(SyndEntry entry : rssNews){
-                    String mess = entry.getDescription().getValue().trim();
-                    messageDTO.setText(mess);
-                    if(!entry.getPublishedDate().after(chat.getLastMessageDateTime())) {
-                        chat.setLastMessageDateTime(date);
-                        break;
+                    messageDTO.setText(entry.getDescription().getValue().trim());
+                    if(entry.getPublishedDate() != null) {
+                        if (!entry.getPublishedDate().after(chat.getLastMessageDateTime())) {
+                            break;
+                        }
+                        if (!messageDTO.getText().isEmpty())
+                            databaseService.addMessage(messageDTO);
                     }
-                    if(!mess.isEmpty())
-                        databaseService.addMessage(messageDTO);
                 }
+                chat.setLastMessageDateTime(rssNews.get(0).getPublishedDate());
             } catch (FeedException | ConnectionNotFoundException e) {
                 e.printStackTrace();
             }

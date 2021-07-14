@@ -1,6 +1,5 @@
 package ru.shift.chat.controller;
 
-import com.google.gson.Gson;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -12,9 +11,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import ru.shift.chat.config.ToGson;
 import ru.shift.chat.enums.ErrorCode;
 import ru.shift.chat.enums.TagsConstant;
-import ru.shift.chat.DTO.ErrorDTO;
 import ru.shift.chat.model.User;
 import ru.shift.chat.service.DatabaseService;
 import ru.shift.chat.service.ValidatorImpl;
@@ -34,9 +33,6 @@ public class UserController {
     @Autowired
     ValidatorImpl validator;
 
-    @Autowired
-    Gson gson;
-
     @InitBinder
     private void initBinder(WebDataBinder binder) {
         binder.setValidator(validator);
@@ -44,19 +40,20 @@ public class UserController {
 
     @ExceptionHandler({IllegalArgumentException.class})
     private ResponseEntity<?> notFound() {
-        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.INCOMPLETE_INPUT)),
+        return new ResponseEntity<>(ToGson.ErrorToGson(ErrorCode.INCOMPLETE_INPUT),
                 HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({Exception.class})
     private ResponseEntity<?> unknownError() {
-        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.UNKNOWN_ERROR)),
+        return new ResponseEntity<>(ToGson.ErrorToGson(ErrorCode.UNKNOWN_ERROR),
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({NoSuchElementException.class})
     private ResponseEntity<?> noSuchElementError() {
-        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.INCORRECT_ID)), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(ToGson.ErrorToGson(ErrorCode.INCORRECT_ID),
+                HttpStatus.NOT_FOUND);
     }
 
 

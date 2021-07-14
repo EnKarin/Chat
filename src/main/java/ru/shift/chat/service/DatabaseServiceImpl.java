@@ -3,17 +3,13 @@ package ru.shift.chat.service;
 import com.rometools.rome.io.FeedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
 import ru.shift.chat.DTO.AttachDTO;
 import ru.shift.chat.DTO.MessageDTO;
 import ru.shift.chat.exception.ConnectionNotFoundException;
 import ru.shift.chat.model.*;
 import ru.shift.chat.repository.*;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URLConnection;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -168,10 +164,46 @@ public class DatabaseServiceImpl implements DatabaseService {
             attach = attachRepository.save(attach);
 
             message.setAttach(attach.getName() + attach.getExpansion());
-            List<Unchecked> unchecks = createUncheckedForMessage(message);
+
+            List<Unchecked> unchecks = List.of();
+            if (message.getChat().getConnections() != null) {
+                unchecks = createUncheckedForMessage(message);
+            }
             Message result = messageRepository.save(message);
-            unchecks.forEach(unchecked -> unchecked.setMessage(result));
-            uncheckedRepository.saveAll(unchecks);
+            if (!unchecks.isEmpty()) {
+                unchecks.forEach(unchecked -> unchecked.setMessage(result));
+                uncheckedRepository.saveAll(unchecks);
+            }
+            return attach.getName() + attach.getExpansion();
+        }
+        throw new ConnectionNotFoundException();
+    }
+
+    @Override
+    public String addMessageAttachURL(AttachDTO attachDTO, byte[] file) throws ConnectionNotFoundException {
+        Message message = new Message();
+        message.setUserId(attachDTO.getUserId());
+        message.setSendTime(LocalDateTime.now().toString());
+        message.setLifetimeSec(-1);
+        message.setChat(chatRepository.findById(attachDTO.getChatId()).get());
+        if (message.getUserId() == -1 || hasConnection(message.getChat(), message.getUserId())) {
+            Attach attach = new Attach();
+            attach.setData(file);
+            String name = attachDTO.getUrl();
+            attach.setExpansion(name.substring(name.lastIndexOf('.')));
+            attach = attachRepository.save(attach);
+
+            message.setAttach(attach.getName() + attach.getExpansion());
+
+            List<Unchecked> unchecks = List.of();
+            if (message.getChat().getConnections() != null) {
+                unchecks = createUncheckedForMessage(message);
+            }
+            Message result = messageRepository.save(message);
+            if (!unchecks.isEmpty()) {
+                unchecks.forEach(unchecked -> unchecked.setMessage(result));
+                uncheckedRepository.saveAll(unchecks);
+            }
             return attach.getName() + attach.getExpansion();
         }
         throw new ConnectionNotFoundException();

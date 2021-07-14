@@ -1,18 +1,27 @@
 package ru.shift.chat.DTO;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
+@ApiModel(value = "Message container")
 public class MessageDTO {
 
+    @ApiModelProperty
     private int chatId;
 
+    @ApiModelProperty
     private int userId;
 
+    @ApiModelProperty
     private String text;
 
+    @ApiModelProperty
     private String sendTime;
 
+    @ApiModelProperty
     private Integer lifetimeSec;
 
+    @ApiModelProperty
     private int delaySec;
 
     public String getSendTime() {

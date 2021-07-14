@@ -1,6 +1,5 @@
 package ru.shift.chat.controller;
 
-import com.google.gson.Gson;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -9,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.shift.chat.DTO.ErrorDTO;
 import ru.shift.chat.DTO.MessageDTO;
+import ru.shift.chat.config.ToGson;
 import ru.shift.chat.enums.ErrorCode;
 import ru.shift.chat.enums.TagsConstant;
 import ru.shift.chat.exception.ConnectionNotFoundException;
@@ -29,24 +28,21 @@ public class MessageController {
     @Autowired
     DatabaseService databaseService;
 
-    @Autowired
-    Gson gson;
-
     @ExceptionHandler({ConnectionNotFoundException.class})
     private ResponseEntity<?> connectNotFound() {
-        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.ACCESS_ERROR)),
+        return new ResponseEntity<>(ToGson.ErrorToGson(ErrorCode.ACCESS_ERROR),
                 HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler({Exception.class})
     private ResponseEntity<?> unknownError() {
-        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.UNKNOWN_ERROR)),
+        return new ResponseEntity<>(ToGson.ErrorToGson(ErrorCode.UNKNOWN_ERROR),
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({NoSuchElementException.class})
     private ResponseEntity<?> noSuchElementError() {
-        return new ResponseEntity<>(gson.toJson(new ErrorDTO(ErrorCode.INCORRECT_ID)),
+        return new ResponseEntity<>(ToGson.ErrorToGson(ErrorCode.INCORRECT_ID),
                 HttpStatus.NOT_FOUND);
     }
 
